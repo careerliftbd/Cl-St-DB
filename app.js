@@ -19,13 +19,25 @@ app.use(cors());
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true })); 
 
+// .html রিডাইরেক্ট মিডলওয়্যার: কেউ .html লিখলে অটোমেটিক ক্লিন ইউআরএল-এ রিডাইরেক্ট করবে
+app.use((req, res, next) => {
+    if (req.path.endsWith('.html')) {
+        const newPath = req.path.slice(0, -5);
+        return res.redirect(301, newPath);
+    }
+    next();
+});
+
 // ৪. API রাউটসমূহ যুক্ত করা
 app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/drive', driveRoutes); 
 
 // ৫. ফ্রন্টএন্ডের জন্য স্ট্যাটিক ফোল্ডার সার্ভ করা
-app.use(express.static(path.join(__dirname, 'public')));
+// clean URLs করার জন্য extensions অপশন যোগ করা হলো
+app.use(express.static(path.join(__dirname, 'public'), {
+    extensions: ['html', 'htm']
+}));
 
 // বেসিক হেলথ-চেক রাউট
 app.get('/api/status', (req, res) => {
