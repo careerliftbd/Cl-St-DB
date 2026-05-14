@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Student | Careerlift Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F8FAFC;
+      --primary: #3B82F6;
+      --primary-dark: #2563EB;
+      --primary-light: #EFF6FF;
+      --accent: #10B981;
+      --accent-light: #ECFDF5;
+      --surface: #FFFFFF;
+      --text: #1E293B;
+      --text-secondary: #64748B;
+      --text-muted: #94A3B8;
+      --border: #E2E8F0;
+      --border-light: #F1F5F9;
+      --sidebar-w: 240px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow: 0 4px 16px rgba(0,0,0,.06), 0 1px 4px rgba(0,0,0,.04);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-xs: 6px;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      font-size: 14px;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--text);
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; bottom: 0;
+      z-index: 100; overflow: hidden;
+    }
+    .sidebar-logo {
+      padding: 22px 20px 18px;
+      display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .logo-mark {
+      width: 32px; height: 32px; background: var(--primary);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .logo-text { font-size: 14px; font-weight: 700; color: #fff; letter-spacing: -.01em; }
+    .logo-sub  { font-size: 10px; color: rgba(255,255,255,.4); font-weight: 400; letter-spacing: .04em; text-transform: uppercase; }
+
+    .sidebar nav { padding: 16px 12px; flex: 1; overflow-y: auto; }
+    .nav-section { margin-bottom: 20px; }
+    .nav-label {
+      font-size: 10px; font-weight: 600; color: rgba(255,255,255,.3);
+      text-transform: uppercase; letter-spacing: .08em;
+      padding: 0 8px; margin-bottom: 6px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 10px; border-radius: var(--radius-sm);
+      color: rgba(255,255,255,.55);
+      text-decoration: none; font-size: 13px; font-weight: 500;
+      transition: all .15s; margin-bottom: 2px;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.85); }
+    .nav-item.active { background: rgba(59,130,246,.25); color: #93C5FD; }
+    .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .nav-add {
+      margin: 4px 8px; padding: 9px 12px;
+      background: var(--primary); border-radius: var(--radius-sm);
+      color: #fff; font-size: 13px; font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+      text-decoration: none; transition: background .15s;
+    }
+    .nav-add:hover { background: var(--primary-dark); }
+    .sidebar-footer { padding: 14px 12px; border-top: 1px solid rgba(255,255,255,.08); }
+    .logout-btn {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 10px; width: 100%;
+      border-radius: var(--radius-sm); background: none; border: none;
+      cursor: pointer; color: rgba(255,255,255,.4);
+      font-size: 13px; font-weight: 500; font-family: inherit; transition: all .15s;
+    }
+    .logout-btn:hover { background: rgba(239,68,68,.15); color: #FCA5A5; }
+
+    /* ── MAIN ── */
+    .main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 28px; height: 58px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-left { display: flex; flex-direction: column; gap: 1px; }
+    .topbar-title { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
+    .topbar-sub   { font-size: 11px; color: var(--text-muted); }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .student-id-badge {
+      font-family: monospace; font-size: 12px; font-weight: 700;
+      color: var(--primary); background: var(--primary-light);
+      padding: 4px 10px; border-radius: var(--radius-xs);
+      border: 1px solid #BFDBFE; white-space: nowrap;
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; background: var(--primary); color: #fff;
+      border: none; border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 600; font-family: inherit;
+      cursor: pointer; transition: all .15s; text-decoration: none;
+    }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,.3); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; background: var(--surface); color: var(--text-secondary);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 600; font-family: inherit;
+      cursor: pointer; transition: all .15s; text-decoration: none;
+    }
+    .btn-secondary:hover { background: var(--border-light); border-color: var(--text-muted); }
+
+    /* ── PAGE ── */
+    .page { padding: 24px 28px; }
+
+    /* ── FORM CARD ── */
+    .form-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow-sm);
+      padding: 28px; max-width: 950px;
+    }
+    .section-title {
+      font-size: 13px; font-weight: 700; color: var(--primary);
+      text-transform: uppercase; letter-spacing: .06em;
+      margin: 24px 0 16px; padding-bottom: 8px;
+      border-bottom: 2px solid var(--border-light);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-title:first-child { margin-top: 0; }
+    .section-title svg { width: 16px; height: 16px; }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+    }
+    .form-group {
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .form-group label {
+      font-size: 12px; font-weight: 600; color: var(--text-secondary);
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      padding: 9px 12px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-family: inherit; font-size: 13px; color: var(--text);
+      background: var(--bg); outline: none; transition: all .15s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--primary); background: var(--surface);
+      box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+    }
+    .full-width { grid-column: 1 / -1; }
+
+    /* Checkbox Grid */
+    .checkbox-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px; padding: 14px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+    }
+    .checkbox-grid label {
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      display: flex; align-items: center; gap: 8px; color: var(--text);
+    }
+    .checkbox-grid input[type="checkbox"] {
+      width: 16px; height: 16px; accent-color: var(--primary);
+    }
+
+    /* Photo */
+    .photo-row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+    }
+    .current-photo {
+      width: 56px; height: 56px; border-radius: 50%;
+      object-fit: cover; border: 2px solid var(--border);
+      background: var(--border-light);
+    }
+    .photo-info { flex: 1; }
+    .photo-info label {
+      font-size: 12px; font-weight: 600; color: var(--text-secondary);
+      display: block; margin-bottom: 6px;
+    }
+    .photo-info input[type="file"] {
+      font-size: 12px; color: var(--text-muted);
+    }
+
+    /* Submit */
+    .btn-submit {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 12px 28px; background: var(--primary); color: #fff;
+      border: none; border-radius: var(--radius-sm);
+      font-size: 14px; font-weight: 700; font-family: inherit;
+      cursor: pointer; transition: all .15s; margin-top: 24px; width: 100%;
+    }
+    .btn-submit:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,.3); }
+    .btn-submit:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    /* Overlay */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(15,23,42,.55); backdrop-filter: blur(4px);
+      z-index: 200; align-items: center; justify-content: center; flex-direction: column;
+      color: #fff; font-size: 15px; font-weight: 500; gap: 12px;
+    }
+    .overlay.open { display: flex; }
+    .spinner {
+      width: 36px; height: 36px; border: 3px solid rgba(255,255,255,.2);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Spouse */
+    .spouse-field { display: none; }
+
+    /* ID row */
+    .id-row { display: flex; gap: 10px; }
+    .id-row select { flex: 1; }
+    .id-row input { flex: 3; }
+  </style>
+  <base target="_blank">
+<base target="_blank">
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">CL</div>
+      <div>
+        <div class="logo-text">Careerlift</div>
+        <div class="logo-sub">Admin Panel</div>
+      </div>
+    </div>
+    <nav>
+      <div class="nav-section">
+        <div class="nav-label">Overview</div>
+        <a href="dashboard.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Students</div>
+        <a href="all-students.html" class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          All Students
+        </a>
+        <a href="running-students.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Running Students
+        </a>
+        <a href="alumni.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          Alumni
+        </a>
+        <a href="next-batch.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+          Next Batch
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="add-student.html" class="nav-add">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add New Student
+      </a>
+      <button class="logout-btn" id="logoutBtn" style="margin-top:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Log Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title">Edit Student Profile</div>
+        <div class="topbar-sub" id="topbarSub">Loading student data...</div>
+      </div>
+      <div class="topbar-right">
+        <span class="student-id-badge" id="displayID">ID: Loading...</span>
+        <button class="btn-secondary" id="backBtn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to Profile
+        </button>
+      </div>
+    </div>
+
+    <!-- PAGE BODY -->
+    <div class="page">
+      <div class="form-card">
+        <form id="editForm">
+
+          <!-- Personal Information -->
+          <div class="section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Personal Information
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input type="text" id="fullName" required>
+            </div>
+            <div class="form-group">
+              <label>Date of Birth *</label>
+              <input type="date" id="dob" required>
+            </div>
+            <div class="form-group">
+              <label>Gender *</label>
+              <select id="gender" required>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Blood Group</label>
+              <select id="bloodGroup">
+                <option value="">Select</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Religion</label>
+              <input type="text" id="religion" placeholder="Islam">
+            </div>
+            <div class="form-group">
+              <label>Marital Status *</label>
+              <select id="maritalStatus" required onchange="toggleSpouse(this.value)">
+                <option value="Single">Single</option>
+                <option value="Married">Married</option>
+              </select>
+            </div>
+            <div class="form-group spouse-field">
+              <label>Spouse Name</label>
+              <input type="text" id="spouseName">
+            </div>
+            <div class="form-group full-width">
+              <label>ID Number *</label>
+              <div class="id-row">
+                <select id="idType">
+                  <option value="NID">NID</option>
+                  <option value="Birth Certificate">Birth Cert</option>
+                </select>
+                <input type="text" id="nidOrBirthCert">
+              </div>
+            </div>
+            <div class="form-group full-width">
+              <label>Photo Update</label>
+              <div class="photo-row">
+                <img src="" id="currentPhotoPreview" class="current-photo" alt="Current Photo">
+                <div class="photo-info">
+                  <label>Choose new photo to replace</label>
+                  <input type="file" id="newPhoto" accept="image/*">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Academic & Course -->
+          <div class="section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            Academic & Course
+          </div>
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label>Highest Education *</label>
+              <input type="text" id="educationalBackground" required placeholder="HSC Pass / B.Sc in CSE">
+            </div>
+            <div class="form-group">
+              <label>Course Name *</label>
+              <select id="courseName" required>
+                <option value="">Select Course</option>
+                <option value="Primary Healthcare Service Level 2">Primary Healthcare Service Level 2</option>
+                <option value="Dementia Caregiving (Level 3)">Dementia Caregiving (Level 3)</option>
+                <option value="Dementia Caregiving (Level 2)">Dementia Caregiving (Level 2)</option>
+                <option value="Caregiving for Persons with Special Needs (Level-3)">Caregiving for Persons with Special Needs (Level-3)</option>
+                <option value="Caregiving for Persons with Special Needs (Level-2)">Caregiving for Persons with Special Needs (Level-2)</option>
+                <option value="English for Work (Level 2)">English for Work (Level 2)</option>
+                <option value="English for Work (Level 3)">English for Work (Level 3)</option>
+                <option value="Skin Care (Level 3)">Skin Care (Level 3)</option>
+                <option value="Skin Care (Level 2)">Skin Care (Level 2)</option>
+                <option value="Japanese Language (Level-2)">Japanese Language (Level-2)</option>
+                <option value="Japanese Language (Level-3)">Japanese Language (Level-3)</option>
+                <option value="Caregiving For Infant, Toddler and Children Level: 02">Caregiving For Infant, Toddler and Children Level: 02</option>
+                <option value="Caregiving For Elderly Persons Level: 02">Caregiving For Elderly Persons Level: 02</option>
+                <option value="Caregiving For Infant, Toddler and Children Level: 03">Caregiving For Infant, Toddler and Children Level: 03</option>
+                <option value="Caregiving For Elderly Persons Level: 03">Caregiving For Elderly Persons Level: 03</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Batch Number *</label>
+              <input type="text" id="batchNum" required>
+            </div>
+            <div class="form-group">
+              <label>Course Type *</label>
+              <select id="courseType">
+                <option value="Paid">Paid</option>
+                <option value="Free">Free</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Course Status *</label>
+              <select id="courseStatus">
+                <option value="Running">Running</option>
+                <option value="Completed">Completed</option>
+                <option value="Dropped">Dropped</option>
+                <option value="Suspended">Suspended</option>
+                <option value="Next">Next Batch</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Skills</label>
+              <input type="text" id="skills" placeholder="Basic Computer, Driving">
+            </div>
+            <div class="form-group">
+              <label>Languages</label>
+              <input type="text" id="languages" placeholder="Bangla, English">
+            </div>
+          </div>
+
+          <!-- Career & Visa Tracking -->
+          <div class="section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            Career & Visa Tracking
+          </div>
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label>Career Goals *</label>
+              <div class="checkbox-grid">
+                <label><input type="checkbox" name="goal" value="Study Abroad"> Study Abroad</label>
+                <label><input type="checkbox" name="goal" value="Work Visa"> Work Visa</label>
+                <label><input type="checkbox" name="goal" value="Freelancing"> Freelancing</label>
+                <label><input type="checkbox" name="goal" value="Govt Job"> Govt Job</label>
+                <label><input type="checkbox" name="goal" value="Business"> Business</label>
+                <label><input type="checkbox" name="goal" value="PR/Immigration"> PR / Immigration</label>
+                <label><input type="checkbox" name="goal" value="Caregiver Job"> Caregiver Job</label>
+                <label><input type="checkbox" name="goal" value="দেশে চাকরি"> দেশে চাকরি</label>
+                <label><input type="checkbox" name="goal" value="Higher Education"> Higher Education</label>
+                <label><input type="checkbox" name="goal" value="Undecided"> Undecided</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Passport Status</label>
+              <select id="passportStatus">
+                <option value="No Passport">No Passport</option>
+                <option value="Have Passport">Have Passport</option>
+                <option value="Applied">Applied</option>
+                <option value="Expired">Expired</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Financial Readiness</label>
+              <select id="financialReadiness">
+                <option value="Fully Ready">Fully Ready</option>
+                <option value="Need Scholarship">Need Scholarship</option>
+                <option value="Need Instalment">Need Instalment</option>
+                <option value="Sponsor Available">Sponsor Available</option>
+                <option value="Financially Weak">Financially Weak</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>English Proficiency</label>
+              <select id="englishProficiency">
+                <option value="Basic">Basic</option>
+                <option value="Poor">Poor</option>
+                <option value="Conversational">Conversational</option>
+                <option value="Fluent">Fluent</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>IELTS Score (If any)</label>
+              <input type="text" id="ieltsScore" placeholder="6.5">
+            </div>
+            <div class="form-group">
+              <label>Visa Priority *</label>
+              <select id="visaPriority">
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="Hot">Hot</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Admin Note -->
+          <div class="section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Admin Follow-up Note
+          </div>
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label>Comments / Follow-up Note</label>
+              <textarea id="comment" rows="3" placeholder="Special Note regarding processing..."></textarea>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit" id="submitBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save All Changes
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- OVERLAY -->
+  <div class="overlay" id="overlay">
+    <div class="spinner"></div>
+    <div>প্রোফাইল আপডেট হচ্ছে...</div>
+  </div>
+
+  <script>
+    /* ── AUTH ── */
+    const token = localStorage.getItem('adminToken');
+    if (!token) window.location.href = '/index.html';
+    const urlParams = new URLSearchParams(window.location.search);
+    const studentID = urlParams.get('id');
+
+    document.getElementById('backBtn').addEventListener('click', () => window.history.back());
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('adminToken');
+      window.location.href = '/index.html';
+    });
+
+    /* ── TOGGLE SPOUSE ── */
+    function toggleSpouse(status) {
+      document.querySelectorAll('.spouse-field').forEach(f => {
+        f.style.display = status === 'Married' ? 'flex' : 'none';
+      });
+    }
+
+    let existingPhotoLink = '';
+
+    /* ── LOAD DATA ── */
+    async function loadData() {
+      try {
+        const res = await fetch(`/api/students/${studentID}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const result = await res.json();
+        if (result.success) {
+          const s = result.data;
+          document.getElementById('displayID').textContent = `ID: ${s.studentID}`;
+          document.getElementById('topbarSub').textContent = s.fullName;
+
+          // Personal
+          document.getElementById('fullName').value = s.fullName;
+          if (s.dob) document.getElementById('dob').value = new Date(s.dob).toISOString().split('T')[0];
+          document.getElementById('gender').value = s.gender;
+          document.getElementById('bloodGroup').value = s.bloodGroup || '';
+          document.getElementById('religion').value = s.religion || '';
+          document.getElementById('maritalStatus').value = s.maritalStatus;
+          toggleSpouse(s.maritalStatus);
+          if (s.spouseInfo) document.getElementById('spouseName').value = s.spouseInfo.name || '';
+
+          // ID parsing
+          if (s.nidOrBirthCert) {
+            const parts = s.nidOrBirthCert.split(': ');
+            if (parts.length === 2) {
+              document.getElementById('idType').value = parts[0];
+              document.getElementById('nidOrBirthCert').value = parts[1];
+            } else {
+              document.getElementById('nidOrBirthCert').value = s.nidOrBirthCert;
+            }
+          }
+
+          existingPhotoLink = s.photoLink;
+          document.getElementById('currentPhotoPreview').src = s.photoLink;
+
+          // Academic
+          document.getElementById('educationalBackground').value = s.educationalBackground || '';
+          document.getElementById('courseName').value = s.admissionInfo?.courseName || '';
+          document.getElementById('batchNum').value = s.admissionInfo?.batchNum || '';
+          document.getElementById('courseStatus').value = s.admissionInfo?.courseStatus || 'Running';
+          document.getElementById('courseType').value = s.admissionInfo?.courseType || 'Paid';
+          document.getElementById('skills').value = s.skillsAndLanguages?.skills || '';
+          document.getElementById('languages').value = s.skillsAndLanguages?.languages || '';
+
+          // Career
+          const goals = s.careerProfile?.careerGoal || [];
+          document.querySelectorAll('input[name="goal"]').forEach(cb => {
+            if (goals.includes(cb.value)) cb.checked = true;
+          });
+          document.getElementById('passportStatus').value = s.careerProfile?.passportStatus || 'No Passport';
+          document.getElementById('financialReadiness').value = s.careerProfile?.financialReadiness || 'Fully Ready';
+          document.getElementById('englishProficiency').value = s.careerProfile?.englishProficiency || 'Basic';
+          document.getElementById('ieltsScore').value = s.careerProfile?.ieltsScore || '';
+          document.getElementById('visaPriority').value = s.careerProfile?.visaPriority || 'Low';
+
+          // Admin Note
+          document.getElementById('comment').value = s.comment || '';
+        }
+      } catch (err) {
+        document.getElementById('topbarSub').textContent = 'Failed to load student data';
+        console.error(err);
+      }
+    }
+
+    /* ── FORM SUBMIT ── */
+    document.getElementById('editForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const overlay = document.getElementById('overlay');
+      const btn = document.getElementById('submitBtn');
+      overlay.classList.add('open');
+      btn.disabled = true;
+
+      let finalPhotoLink = existingPhotoLink;
+      const photoInput = document.getElementById('newPhoto').files[0];
+
+      if (photoInput) {
+        const formData = new FormData();
+        formData.append('studentPhoto', photoInput);
+        const driveRes = await fetch('/api/drive/upload', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        const driveData = await driveRes.json();
+        if (driveData.success) finalPhotoLink = driveData.photoLink;
+      }
+
+      const selectedGoals = [];
+      document.querySelectorAll('input[name="goal"]:checked').forEach(cb => selectedGoals.push(cb.value));
+
+      const idType = document.getElementById('idType').value;
+      const idNum = document.getElementById('nidOrBirthCert').value;
+
+      const payload = {
+        fullName: document.getElementById('fullName').value,
+        dob: document.getElementById('dob').value,
+        gender: document.getElementById('gender').value,
+        bloodGroup: document.getElementById('bloodGroup').value,
+        religion: document.getElementById('religion').value,
+        maritalStatus: document.getElementById('maritalStatus').value,
+        'spouseInfo.name': document.getElementById('spouseName').value,
+        nidOrBirthCert: `${idType}: ${idNum}`,
+        photoLink: finalPhotoLink,
+        educationalBackground: document.getElementById('educationalBackground').value,
+        'admissionInfo.courseName': document.getElementById('courseName').value,
+        'admissionInfo.batchNum': document.getElementById('batchNum').value,
+        'admissionInfo.courseStatus': document.getElementById('courseStatus').value,
+        'admissionInfo.courseType': document.getElementById('courseType').value,
+        'skillsAndLanguages.skills': document.getElementById('skills').value,
+        'skillsAndLanguages.languages': document.getElementById('languages').value,
+        'careerProfile.careerGoal': selectedGoals,
+        'careerProfile.passportStatus': document.getElementById('passportStatus').value,
+        'careerProfile.financialReadiness': document.getElementById('financialReadiness').value,
+        'careerProfile.englishProficiency': document.getElementById('englishProficiency').value,
+        'careerProfile.ieltsScore': document.getElementById('ieltsScore').value,
+        'careerProfile.visaPriority': document.getElementById('visaPriority').value,
+        comment: document.getElementById('comment').value
+      };
+
+      try {
+        const res = await fetch(`/api/students/${studentID}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        overlay.classList.remove('open');
+        btn.disabled = false;
+        if (data.success) {
+          window.location.href = `/student-profile.html?id=${studentID}`;
+        } else {
+          alert('Update failed: ' + data.message);
+        }
+      } catch (err) {
+        overlay.classList.remove('open');
+        btn.disabled = false;
+        alert('Server error. Please try again.');
+      }
+    });
+
+    loadData();
+  </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+node_modules/
+.env
+temp/
+uploads/
+credentials.json
+*.PNG
+*.json
+!package.json
+!package-lock.json
+!nodemon.json

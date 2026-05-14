@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | Careerlift Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F8FAFC;
+      --primary: #3B82F6;
+      --primary-dark: #2563EB;
+      --primary-light: #EFF6FF;
+      --accent: #10B981;
+      --accent-light: #ECFDF5;
+      --surface: #FFFFFF;
+      --text: #1E293B;
+      --text-secondary: #64748B;
+      --text-muted: #94A3B8;
+      --border: #E2E8F0;
+      --border-light: #F1F5F9;
+      --sidebar-w: 240px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow: 0 4px 16px rgba(0,0,0,.06), 0 1px 4px rgba(0,0,0,.04);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-xs: 6px;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      font-size: 14px;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--text);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+      overflow: hidden;
+    }
+    .sidebar-logo {
+      padding: 22px 20px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .logo-mark {
+      width: 32px; height: 32px;
+      background: var(--primary);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #fff;
+      flex-shrink: 0;
+    }
+    .logo-text { font-size: 14px; font-weight: 700; color: #fff; letter-spacing: -.01em; }
+    .logo-sub  { font-size: 10px; color: rgba(255,255,255,.4); font-weight: 400; letter-spacing: .04em; text-transform: uppercase; }
+
+    .sidebar nav { padding: 16px 12px; flex: 1; overflow-y: auto; }
+    .nav-section { margin-bottom: 20px; }
+    .nav-label {
+      font-size: 10px; font-weight: 600; color: rgba(255,255,255,.3);
+      text-transform: uppercase; letter-spacing: .08em;
+      padding: 0 8px; margin-bottom: 6px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      color: rgba(255,255,255,.55);
+      text-decoration: none; font-size: 13px; font-weight: 500;
+      transition: all .15s;
+      margin-bottom: 2px;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.85); }
+    .nav-item.active { background: rgba(59,130,246,.25); color: #93C5FD; }
+    .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .nav-add {
+      margin: 4px 8px;
+      padding: 9px 12px;
+      background: var(--primary);
+      border-radius: var(--radius-sm);
+      color: #fff; font-size: 13px; font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+      text-decoration: none; transition: background .15s;
+    }
+    .nav-add:hover { background: var(--primary-dark); }
+    .sidebar-footer {
+      padding: 14px 12px;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+    .logout-btn {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 10px; width: 100%;
+      border-radius: var(--radius-sm);
+      background: none; border: none; cursor: pointer;
+      color: rgba(255,255,255,.4); font-size: 13px; font-weight: 500;
+      font-family: inherit; transition: all .15s;
+    }
+    .logout-btn:hover { background: rgba(239,68,68,.15); color: #FCA5A5; }
+
+    /* ── MAIN ── */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 58px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-left { display: flex; flex-direction: column; gap: 1px; }
+    .topbar-title { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
+    .topbar-sub { font-size: 11px; color: var(--text-muted); }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .admin-chip {
+      display: flex; align-items: center; gap: 7px;
+      background: var(--primary-light);
+      border: 1px solid #BFDBFE;
+      border-radius: 20px;
+      padding: 5px 12px 5px 7px;
+      font-size: 12px; font-weight: 600; color: var(--primary-dark);
+    }
+    .admin-avatar {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; color: #fff;
+    }
+    .refresh-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 13px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); color: var(--text-secondary);
+      font-size: 12px; font-weight: 500; font-family: inherit;
+      cursor: pointer; transition: all .15s;
+    }
+    .refresh-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+    .refresh-btn.spinning svg { animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── PAGE ── */
+    .page { padding: 28px; }
+
+    /* ── STAT CARDS ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      padding: 18px 20px;
+      display: flex; flex-direction: column;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .stat-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+    .stat-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .stat-card.blue::before  { background: var(--primary); }
+    .stat-card.green::before { background: var(--accent); }
+    .stat-card.purple::before{ background: #8B5CF6; }
+    .stat-card.red::before   { background: #EF4444; }
+
+    .stat-top { display: flex; align-items: center; justify-content: space-between; }
+    .stat-icon {
+      width: 36px; height: 36px; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .stat-icon.blue   { background: var(--primary-light); }
+    .stat-icon.green  { background: var(--accent-light); }
+    .stat-icon.purple { background: #F5F3FF; }
+    .stat-icon.red    { background: #FEF2F2; }
+
+    .stat-trend {
+      font-size: 11px; font-weight: 600; padding: 3px 7px; border-radius: 20px;
+    }
+    .trend-up   { background: #ECFDF5; color: #065F46; }
+    .trend-down { background: #FEF2F2; color: #991B1B; }
+    .trend-neu  { background: var(--border-light); color: var(--text-muted); }
+
+    .stat-value {
+      font-size: 32px; font-weight: 700; color: var(--text);
+      letter-spacing: -.04em; line-height: 1;
+    }
+    .stat-value.loading-num {
+      font-size: 24px; color: var(--text-muted);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .stat-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+    .stat-sub   { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ── BACKUP BUTTON ── */
+    .backup-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 13px;
+      background: #1E293B; color: #fff;
+      border: none; border-radius: var(--radius-sm);
+      font-size: 12px; font-weight: 600; font-family: inherit;
+      cursor: pointer; transition: all .15s;
+    }
+    .backup-btn:hover { background: #334155; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(30,41,59,.3); }
+    .backup-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+    .backup-btn svg { width: 14px; height: 14px; }
+
+    /* ── CHARTS GRID ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .chart-card.full { grid-column: span 2; }
+    .chart-header {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border-light);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .chart-title-wrap { display: flex; align-items: center; gap: 10px; }
+    .chart-icon {
+      width: 28px; height: 28px; border-radius: var(--radius-xs);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .chart-title { font-size: 13px; font-weight: 700; color: var(--text); }
+    .chart-sub   { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+    .chart-body  { padding: 20px; }
+    .chart-body.no-pad { padding: 0; }
+
+    /* ── LEGEND ── */
+    .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 14px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+    .legend-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── FINANCE TABLE ── */
+    .finance-row {
+      display: grid;
+      grid-template-columns: 1fr 120px 100px 80px;
+      gap: 10px;
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border-light);
+      align-items: center;
+      font-size: 13px;
+    }
+    .finance-row.header {
+      background: var(--border-light);
+      font-size: 10px; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: .07em;
+      padding: 8px 20px;
+    }
+    .finance-row:last-child { border-bottom: none; }
+    .finance-bar-wrap {
+      height: 6px; background: var(--border-light);
+      border-radius: 99px; overflow: hidden;
+    }
+    .finance-bar {
+      height: 100%; border-radius: 99px;
+      transition: width .8s ease;
+    }
+    .pill {
+      display: inline-block; padding: 2px 9px; border-radius: 20px;
+      font-size: 11px; font-weight: 700;
+    }
+    .pill-paid { background: var(--accent-light); color: #065F46; }
+    .pill-free { background: #FEF3C7; color: #92400E; }
+    .pill-mix  { background: var(--primary-light); color: var(--primary-dark); }
+
+    /* ── QUICK LINKS ── */
+    .quick-grid {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 10px;
+      margin-bottom: 20px;
+    }
+    .quick-link {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 12px 14px;
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--text);
+      font-size: 13px; font-weight: 500;
+      transition: all .15s;
+    }
+    .quick-link:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+    .quick-link-icon {
+      width: 30px; height: 30px; border-radius: var(--radius-xs);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* ── SKELETON ── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--border-light) 25%, var(--border) 50%, var(--border-light) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  </style>
+<base target="_blank">
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">CL</div>
+      <div>
+        <div class="logo-text">Careerlift</div>
+        <div class="logo-sub">Admin Panel</div>
+      </div>
+    </div>
+
+    <nav>
+      <div class="nav-section">
+        <div class="nav-label">Overview</div>
+        <a href="dashboard.html" class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Students</div>
+        <a href="all-students.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          All Students
+        </a>
+        <a href="running-students.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Running Students
+        </a>
+        <a href="alumni.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          Alumni
+        </a>
+        <a href="next-batch.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+          Next Batch
+        </a>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="add-student.html" class="nav-add">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add New Student
+      </a>
+      <button class="logout-btn" id="logoutBtn" style="margin-top:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Log Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title">System Dashboard</div>
+        <div class="topbar-sub" id="lastUpdated">Loading data…</div>
+      </div>
+      <div class="topbar-right">
+        <button class="backup-btn" id="manualBackupBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+          Instant Backup to Drive
+        </button>
+        <button class="refresh-btn" id="refreshBtn" onclick="loadDashboard()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Refresh
+        </button>
+        <div class="admin-chip">
+          <div class="admin-avatar">SA</div>
+          Super Admin
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE BODY -->
+    <div class="page">
+
+      <!-- QUICK LINKS -->
+      <div class="quick-grid">
+        <a href="all-students.html" class="quick-link">
+          <div class="quick-link-icon" style="background:var(--primary-light)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          </div>
+          All Students
+        </a>
+        <a href="running-students.html" class="quick-link">
+          <div class="quick-link-icon" style="background:var(--accent-light)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          Running Students
+        </a>
+        <a href="alumni.html" class="quick-link">
+          <div class="quick-link-icon" style="background:#F5F3FF">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          </div>
+          Alumni
+        </a>
+        <a href="add-student.html" class="quick-link">
+          <div class="quick-link-icon" style="background:#FFF7ED">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          Add Student
+        </a>
+      </div>
+
+      <!-- STAT CARDS -->
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          <div class="stat-top">
+            <div class="stat-icon blue">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <span class="stat-trend trend-neu" id="totalTrend">—</span>
+          </div>
+          <div>
+            <div class="stat-value loading-num" id="totalCount">…</div>
+            <div class="stat-label">Total Students</div>
+            <div class="stat-sub">All time enrollments</div>
+          </div>
+        </div>
+
+        <div class="stat-card green">
+          <div class="stat-top">
+            <div class="stat-icon green">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <span class="stat-trend trend-neu" id="runningTrend">—</span>
+          </div>
+          <div>
+            <div class="stat-value loading-num" id="runningCount">…</div>
+            <div class="stat-label">Running Students</div>
+            <div class="stat-sub">Currently active</div>
+          </div>
+        </div>
+
+        <div class="stat-card purple">
+          <div class="stat-top">
+            <div class="stat-icon purple">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            </div>
+            <span class="stat-trend trend-neu" id="alumniTrend">—</span>
+          </div>
+          <div>
+            <div class="stat-value loading-num" id="alumniCount">…</div>
+            <div class="stat-label">Alumni</div>
+            <div class="stat-sub">Completed course</div>
+          </div>
+        </div>
+
+        <div class="stat-card red">
+          <div class="stat-top">
+            <div class="stat-icon red">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <span class="stat-trend trend-down" id="hotTrend">Hot 🔥</span>
+          </div>
+          <div>
+            <div class="stat-value loading-num" id="hotVisaCount">…</div>
+            <div class="stat-label">Hot Priority Visa</div>
+            <div class="stat-sub">Needs urgent attention</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="charts-grid">
+
+        <!-- Status Donut -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title-wrap">
+              <div class="chart-icon" style="background:var(--primary-light)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+              </div>
+              <div>
+                <div class="chart-title">Student Status</div>
+                <div class="chart-sub">Distribution by enrollment status</div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-body" style="display:flex;flex-direction:column;align-items:center;">
+            <div style="position:relative;width:200px;height:200px;">
+              <canvas id="statusChart"></canvas>
+              <div id="statusCenter" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
+                <div style="font-size:24px;font-weight:700;color:var(--text);letter-spacing:-.03em" id="statusTotal">—</div>
+                <div style="font-size:10px;color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:.06em;">Total</div>
+              </div>
+            </div>
+            <div class="legend" id="statusLegend" style="justify-content:center;"></div>
+          </div>
+        </div>
+
+        <!-- Career Goals Bar -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title-wrap">
+              <div class="chart-icon" style="background:var(--accent-light)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              </div>
+              <div>
+                <div class="chart-title">Career Goals</div>
+                <div class="chart-sub">Top goals across all students</div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-body">
+            <canvas id="goalChart" style="max-height:230px;"></canvas>
+          </div>
+        </div>
+
+        <!-- Finance Bar (full width) -->
+        <div class="chart-card full">
+          <div class="chart-header">
+            <div class="chart-title-wrap">
+              <div class="chart-icon" style="background:#FFF7ED">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+              <div>
+                <div class="chart-title">Financial Overview</div>
+                <div class="chart-sub">Paid vs free enrollment breakdown per batch</div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-body no-pad">
+            <div class="finance-row header">
+              <div>Batch / Category</div>
+              <div>Progress</div>
+              <div>Students</div>
+              <div>Type</div>
+            </div>
+            <div id="financeRows">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+          <div style="padding:14px 20px;border-top:1px solid var(--border-light);">
+            <canvas id="financeChart" style="max-height:180px;"></canvas>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    /* ── AUTH ── */
+    const token = localStorage.getItem('adminToken');
+    if (!token) window.location.href = '/index.html';
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('adminToken');
+      window.location.href = '/index.html';
+    });
+
+    /* ── MANUAL BACKUP ── */
+    document.getElementById('manualBackupBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('manualBackupBtn');
+      if (!confirm("আপনি কি এখনই ডাটাবেসের একটি ব্যাকআপ ড্রাইভে পাঠাতে চান?")) return;
+
+      try {
+        btn.disabled = true;
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Backing up...`;
+
+        const res = await fetch('/api/drive/manual-backup', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          alert(data.message);
+        } else {
+          alert("ভুল হয়েছে: " + data.message);
+        }
+      } catch (err) {
+        alert("সার্ভার কানেকশন এরর!");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg> Instant Backup to Drive`;
+      }
+    });
+
+    /* ── CHART.JS GLOBAL DEFAULTS ── */
+    Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+    Chart.defaults.font.size   = 12;
+    Chart.defaults.color       = '#64748B';
+    Chart.defaults.plugins.legend.display = false;
+
+    let statusChartInst = null;
+    let goalChartInst   = null;
+    let financeChartInst= null;
+
+    const PALETTE = {
+      blue:   '#3B82F6',
+      green:  '#10B981',
+      purple: '#8B5CF6',
+      amber:  '#F59E0B',
+      red:    '#EF4444',
+      indigo: '#6366F1',
+      pink:   '#EC4899',
+      teal:   '#14B8A6',
+      orange: '#F97316',
+      sky:    '#0EA5E9',
+    };
+    const COLORS = Object.values(PALETTE);
+
+    function animateCount(el, target) {
+      el.classList.remove('loading-num');
+      let start = 0;
+      const step = Math.ceil(target / 30);
+      const timer = setInterval(() => {
+        start = Math.min(start + step, target);
+        el.textContent = start.toLocaleString();
+        if (start >= target) clearInterval(timer);
+      }, 30);
+    }
+
+    function fmtNow() {
+      return new Date().toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+    }
+
+    async function loadDashboard() {
+      const btn = document.getElementById('refreshBtn');
+      btn.classList.add('spinning');
+      document.getElementById('lastUpdated').textContent = 'Refreshing…';
+
+      try {
+        const res    = await fetch('/api/students', { headers: { 'Authorization': `Bearer ${token}` } });
+        const result = await res.json();
+
+        if (!result.success) throw new Error(result.message);
+        const students = result.data;
+
+        /* ── COUNTS ── */
+        const total   = students.length;
+        const running = students.filter(s => s.admissionInfo?.courseStatus === 'Running').length;
+        const alumni  = students.filter(s => s.admissionInfo?.courseStatus === 'Completed').length;
+        const hotVisa = students.filter(s => s.careerProfile?.visaPriority === 'Hot').length;
+
+        animateCount(document.getElementById('totalCount'),   total);
+        animateCount(document.getElementById('runningCount'), running);
+        animateCount(document.getElementById('alumniCount'),  alumni);
+        animateCount(document.getElementById('hotVisaCount'), hotVisa);
+
+        document.getElementById('statusTotal').textContent = total;
+        document.getElementById('runningTrend').textContent = running > 0 ? `${Math.round(running/total*100)}% active` : '—';
+        document.getElementById('alumniTrend').textContent  = alumni  > 0 ? `${Math.round(alumni/total*100)}% done`   : '—';
+        document.getElementById('totalTrend').textContent   = `${total} enrolled`;
+        document.getElementById('runningTrend').className   = 'stat-trend trend-up';
+        document.getElementById('alumniTrend').className    = 'stat-trend trend-up';
+        document.getElementById('totalTrend').className     = 'stat-trend trend-neu';
+
+        /* ── STATUS CHART ── */
+        const statusMap = {};
+        students.forEach(s => {
+          const st = s.admissionInfo?.courseStatus || 'Unknown';
+          statusMap[st] = (statusMap[st] || 0) + 1;
+        });
+        const statusColors = { Running:'#3B82F6', Completed:'#10B981', Dropped:'#F59E0B', Suspended:'#EF4444', Next:'#8B5CF6', Unknown:'#94A3B8' };
+        const statusLabels = Object.keys(statusMap);
+        const statusData   = Object.values(statusMap);
+        const statusCols   = statusLabels.map(l => statusColors[l] || '#94A3B8');
+
+        if (statusChartInst) statusChartInst.destroy();
+        statusChartInst = new Chart(document.getElementById('statusChart'), {
+          type: 'doughnut',
+          data: {
+            labels: statusLabels,
+            datasets: [{ data: statusData, backgroundColor: statusCols, borderWidth: 3, borderColor: '#fff', hoverBorderWidth: 3 }]
+          },
+          options: {
+            cutout: '72%',
+            plugins: { legend: { display: false }, tooltip: {
+              callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} students` }
+            }},
+            animation: { animateRotate: true, duration: 800 }
+          }
+        });
+
+        // Legend
+        const legendEl = document.getElementById('statusLegend');
+        legendEl.innerHTML = statusLabels.map((l, i) =>
+          `<div class="legend-item"><div class="legend-dot" style="background:${statusCols[i]}"></div>${l} (${statusData[i]})</div>`
+        ).join('');
+
+        /* ── CAREER GOALS ── */
+        const goalMap = {};
+        students.forEach(s => {
+          (s.careerProfile?.careerGoal || []).forEach(g => {
+            goalMap[g] = (goalMap[g] || 0) + 1;
+          });
+        });
+        const goalEntries = Object.entries(goalMap).sort((a,b) => b[1]-a[1]).slice(0, 8);
+        const goalLabels  = goalEntries.map(e => e[0]);
+        const goalData    = goalEntries.map(e => e[1]);
+
+        if (goalChartInst) goalChartInst.destroy();
+        goalChartInst = new Chart(document.getElementById('goalChart'), {
+          type: 'bar',
+          data: {
+            labels: goalLabels,
+            datasets: [{
+              data: goalData,
+              backgroundColor: goalLabels.map((_, i) => COLORS[i % COLORS.length] + '22'),
+              borderColor:     goalLabels.map((_, i) => COLORS[i % COLORS.length]),
+              borderWidth: 2,
+              borderRadius: 6,
+              borderSkipped: false,
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            plugins: { legend: { display: false }, tooltip: {
+              callbacks: { label: ctx => ` ${ctx.raw} students` }
+            }},
+            scales: {
+              x: { grid: { color: '#F1F5F9' }, border: { display: false }, ticks: { precision: 0 } },
+              y: { grid: { display: false }, border: { display: false } }
+            },
+            animation: { duration: 800 }
+          }
+        });
+
+        /* ── FINANCE TABLE + CHART ── */
+        const batchMap = {};
+        students.forEach(s => {
+          const batch = s.admissionInfo?.batchNum || 'Unknown';
+          const type  = s.admissionInfo?.courseType || 'Unknown';
+          if (!batchMap[batch]) batchMap[batch] = { paid: 0, free: 0, total: 0 };
+          if (type.toLowerCase().includes('free') || type.toLowerCase().includes('scholarship')) {
+            batchMap[batch].free++;
+          } else {
+            batchMap[batch].paid++;
+          }
+          batchMap[batch].total++;
+        });
+
+        const batches    = Object.keys(batchMap).sort();
+        const paidCounts = batches.map(b => batchMap[b].paid);
+        const freeCounts = batches.map(b => batchMap[b].free);
+        const maxTotal   = Math.max(...batches.map(b => batchMap[b].total), 1);
+
+        // Finance table rows
+        const rowsEl = document.getElementById('financeRows');
+        rowsEl.innerHTML = batches.map(b => {
+          const d = batchMap[b];
+          const pct = Math.round((d.paid / d.total) * 100);
+          const typeTag = d.paid > d.free
+            ? `<span class="pill pill-paid">Paid</span>`
+            : d.free > d.paid
+            ? `<span class="pill pill-free">Free</span>`
+            : `<span class="pill pill-mix">Mixed</span>`;
+          return `
+            <div class="finance-row">
+              <div style="font-weight:600;color:var(--text)">Batch ${b}</div>
+              <div>
+                <div class="finance-bar-wrap">
+                  <div class="finance-bar" style="width:${Math.round(d.total/maxTotal*100)}%;background:linear-gradient(90deg,var(--primary),var(--accent))"></div>
+                </div>
+                <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${d.paid} paid · ${d.free} free</div>
+              </div>
+              <div style="font-weight:600;color:var(--text)">${d.total} <span style="font-weight:400;color:var(--text-muted);font-size:11px;">students</span></div>
+              <div>${typeTag}</div>
+            </div>`;
+        }).join('');
+
+        if (financeChartInst) financeChartInst.destroy();
+        financeChartInst = new Chart(document.getElementById('financeChart'), {
+          type: 'bar',
+          data: {
+            labels: batches.map(b => `Batch ${b}`),
+            datasets: [
+              {
+                label: 'Paid',
+                data: paidCounts,
+                backgroundColor: '#3B82F622',
+                borderColor: '#3B82F6',
+                borderWidth: 2,
+                borderRadius: 6,
+                borderSkipped: false,
+              },
+              {
+                label: 'Free / Scholarship',
+                data: freeCounts,
+                backgroundColor: '#10B98122',
+                borderColor: '#10B981',
+                borderWidth: 2,
+                borderRadius: 6,
+                borderSkipped: false,
+              }
+            ]
+          },
+          options: {
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+                align: 'end',
+                labels: { boxWidth: 10, boxHeight: 10, borderRadius: 5, useBorderRadius: true, padding: 16, font: { size: 12 } }
+              },
+              tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw}` } }
+            },
+            scales: {
+              x: { grid: { display: false }, border: { display: false }, stacked: false },
+              y: { grid: { color: '#F1F5F9' }, border: { display: false }, ticks: { precision: 0 } }
+            },
+            animation: { duration: 800 }
+          }
+        });
+
+        document.getElementById('lastUpdated').textContent = `Last updated: ${fmtNow()}`;
+
+      } catch (err) {
+        document.getElementById('lastUpdated').textContent = `Error loading data — ${err.message}`;
+        ['totalCount','runningCount','alumniCount','hotVisaCount'].forEach(id => {
+          const el = document.getElementById(id);
+          el.textContent = 'Err';
+          el.classList.remove('loading-num');
+          el.style.color = '#EF4444';
+          el.style.fontSize = '18px';
+        });
+      } finally {
+        document.getElementById('refreshBtn').classList.remove('spinning');
+      }
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>

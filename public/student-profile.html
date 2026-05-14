@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Profile | Careerlift Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F8FAFC;
+      --primary: #3B82F6;
+      --primary-dark: #2563EB;
+      --primary-light: #EFF6FF;
+      --accent: #10B981;
+      --accent-light: #ECFDF5;
+      --surface: #FFFFFF;
+      --text: #0F172A;
+      --text-secondary: #475569;
+      --text-muted: #94A3B8;
+      --border: #E2E8F0;
+      --border-light: #F1F5F9;
+      --sidebar-w: 240px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --radius: 16px;
+      --radius-sm: 8px;
+      --radius-xs: 6px;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      font-size: 14px;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: #1E293B;
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; bottom: 0;
+      z-index: 100; overflow: hidden;
+    }
+    .sidebar-logo {
+      padding: 22px 20px 18px;
+      display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .logo-mark {
+      width: 32px; height: 32px; background: var(--primary);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .logo-text { font-size: 14px; font-weight: 700; color: #fff; letter-spacing: -.01em; }
+    .logo-sub  { font-size: 10px; color: rgba(255,255,255,.4); font-weight: 400; letter-spacing: .04em; text-transform: uppercase; }
+
+    .sidebar nav { padding: 16px 12px; flex: 1; overflow-y: auto; }
+    .nav-section { margin-bottom: 20px; }
+    .nav-label {
+      font-size: 10px; font-weight: 600; color: rgba(255,255,255,.3);
+      text-transform: uppercase; letter-spacing: .08em;
+      padding: 0 8px; margin-bottom: 6px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 10px; border-radius: var(--radius-sm);
+      color: rgba(255,255,255,.55);
+      text-decoration: none; font-size: 13px; font-weight: 500;
+      transition: all .15s; margin-bottom: 2px;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.85); }
+    .nav-item.active { background: rgba(59,130,246,.25); color: #93C5FD; }
+    .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .nav-add {
+      margin: 4px 8px; padding: 9px 12px;
+      background: var(--primary); border-radius: var(--radius-sm);
+      color: #fff; font-size: 13px; font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+      text-decoration: none; transition: background .15s;
+    }
+    .nav-add:hover { background: var(--primary-dark); }
+    .sidebar-footer { padding: 14px 12px; border-top: 1px solid rgba(255,255,255,.08); }
+    .logout-btn {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 10px; width: 100%;
+      border-radius: var(--radius-sm); background: none; border: none;
+      cursor: pointer; color: rgba(255,255,255,.4);
+      font-size: 13px; font-weight: 500; font-family: inherit; transition: all .15s;
+    }
+    .logout-btn:hover { background: rgba(239,68,68,.15); color: #FCA5A5; }
+
+    /* ── MAIN ── */
+    .main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 32px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    }
+    .topbar-left { display: flex; flex-direction: column; gap: 2px; }
+    .topbar-title { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
+    .topbar-sub   { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+
+    .student-id-badge {
+      font-family: 'Plus Jakarta Sans', monospace; font-size: 12px; font-weight: 700;
+      color: var(--text-secondary); background: var(--bg);
+      padding: 6px 12px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); white-space: nowrap;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 8px 16px; border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 600; font-family: inherit;
+      cursor: pointer; transition: all .2s ease; text-decoration: none;
+      border: 1px solid transparent; outline: none;
+    }
+    .btn svg { width: 15px; height: 15px; }
+
+    .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 2px 4px rgba(59,130,246,0.2); }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 6px rgba(59,130,246,0.3); }
+
+    .btn-outline { background: var(--surface); color: var(--text); border-color: var(--border); }
+    .btn-outline:hover { background: var(--border-light); border-color: var(--text-muted); }
+
+    /* ── PAGE LAYOUT ── */
+    .page { padding: 32px; max-width: 1400px; margin: 0 auto; width: 100%; }
+
+    /* ── PROFILE GRID SYSTEM ── */
+    .profile-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+      .profile-layout { grid-template-columns: 1fr; }
+    }
+
+    /* ── CARDS ── */
+    .panel-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    /* ── LEFT COLUMN (USER SUMMARY) ── */
+    .user-summary { text-align: center; padding: 32px 24px; position: relative; }
+
+    .user-summary-bg {
+      position: absolute; top: 0; left: 0; right: 0; height: 100px;
+      background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+      border-bottom: 1px solid var(--border);
+      z-index: 0;
+    }
+
+    .user-avatar-wrap { position: relative; z-index: 1; margin-bottom: 16px; display: inline-block; }
+    .user-avatar {
+      width: 120px; height: 120px; border-radius: 50%;
+      object-fit: cover; border: 4px solid var(--surface);
+      box-shadow: var(--shadow); background: var(--bg);
+    }
+
+    .user-name { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px; z-index: 1; position: relative; }
+    .user-edu { color: var(--text-secondary); font-size: 13px; margin-bottom: 16px; z-index: 1; position: relative; }
+
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 20px;
+      font-size: 12px; font-weight: 700;
+      z-index: 1; position: relative;
+    }
+    .status-badge-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* Contact Details inside Left Panel */
+    .quick-contacts {
+      border-top: 1px solid var(--border);
+      padding: 24px; text-align: left;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .contact-item { display: flex; align-items: flex-start; gap: 12px; }
+    .contact-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--bg); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-secondary); flex-shrink: 0;
+    }
+    .contact-icon svg { width: 16px; height: 16px; }
+    .contact-text { display: flex; flex-direction: column; gap: 2px; }
+    .contact-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+    .contact-value { font-size: 13px; font-weight: 500; color: var(--text); text-decoration: none; }
+    .contact-value[href]:hover { color: var(--primary); text-decoration: underline; }
+
+    .summary-actions { padding: 0 24px 24px; display: flex; flex-direction: column; gap: 10px; }
+
+    /* ── RIGHT COLUMN (DETAILS SECTIONS) ── */
+    .details-stack { display: flex; flex-direction: column; gap: 24px; }
+
+    .section-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+      background: #FAFAFC;
+    }
+    .section-header svg { width: 18px; height: 18px; color: var(--text-secondary); }
+    .section-header h3 { font-size: 15px; font-weight: 700; color: var(--text); }
+
+    .section-body { padding: 24px; }
+
+    /* Data Grid */
+    .data-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; }
+    .data-item { display: flex; flex-direction: column; gap: 6px; }
+    .data-label {
+      font-size: 11px; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .data-value { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.4; }
+    .data-value-mono { font-family: monospace; font-size: 14px; letter-spacing: 0.5px; color: var(--text); font-weight: 600; background: var(--bg); padding: 4px 8px; border-radius: 6px; display: inline-block; border: 1px solid var(--border-light); }
+    .data-value-highlight { color: var(--primary-dark); font-weight: 700; }
+    .data-value-hot { color: #DC2626; font-weight: 700; }
+
+    /* ── GOAL TAGS ── */
+    .goal-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .goal-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--bg); color: var(--text-secondary);
+      padding: 6px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border);
+    }
+    .goal-tag svg { width: 12px; height: 12px; color: var(--primary); }
+
+    /* ── ADMIN NOTE ── */
+    .admin-note {
+      background: #FFFBEB;
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid #FDE68A;
+      color: #92400E;
+      font-size: 14px;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    /* ── STATUS COLORS ── */
+    .status-Running   { background: #EFF6FF !important; color: #1D4ED8 !important; border: 1px solid #BFDBFE !important; }
+    .status-Completed { background: #ECFDF5 !important; color: #065F46 !important; border: 1px solid #A7F3D0 !important; }
+    .status-Dropped   { background: #FEF3C7 !important; color: #92400E !important; border: 1px solid #FDE68A !important; }
+    .status-Suspended { background: #FEF2F2 !important; color: #991B1B !important; border: 1px solid #FECACA !important; }
+    .status-Next      { background: #F5F3FF !important; color: #5B21B6 !important; border: 1px solid #DDD6FE !important; }
+
+    /* ── LOADING / ERROR ── */
+    .profile-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 100px 20px; gap: 16px; text-align: center; }
+    .profile-loading svg { width: 40px; height: 40px; color: var(--primary); animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .profile-loading-text { font-size: 15px; color: var(--text-secondary); font-weight: 500; }
+    .profile-error { padding: 50px; text-align: center; color: #DC2626; font-size: 15px; font-weight: 600; background: #FEF2F2; border-radius: var(--radius); border: 1px solid #FECACA; }
+
+    /* ── MODAL ── */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(15,23,42,.6); backdrop-filter: blur(4px);
+      z-index: 200; display: none; align-items: center; justify-content: center;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--surface); border-radius: var(--radius);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      padding: 32px; max-width: 400px; width: 90%;
+      animation: modalIn .2s ease;
+    }
+    @keyframes modalIn { from { transform: scale(.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .modal h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .modal p  { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 24px; }
+    .modal-label { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 8px; display: block; }
+    .modal-select {
+      width: 100%; padding: 10px 14px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-family: inherit; font-size: 14px; color: var(--text);
+      background: var(--bg); outline: none; margin-bottom: 24px;
+      transition: all .2s;
+    }
+    .modal-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+    .modal-actions { display: flex; gap: 12px; justify-content: flex-end; }
+  </style>
+  <base target="_blank">
+<base target="_blank">
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">CL</div>
+      <div>
+        <div class="logo-text">Careerlift</div>
+        <div class="logo-sub">Admin Panel</div>
+      </div>
+    </div>
+    <nav>
+      <div class="nav-section">
+        <div class="nav-label">Overview</div>
+        <a href="dashboard.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Students</div>
+        <a href="all-students.html" class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          All Students
+        </a>
+        <a href="running-students.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Running Students
+        </a>
+        <a href="alumni.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          Alumni
+        </a>
+        <a href="next-batch.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+          Next Batch
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="add-student.html" class="nav-add">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add New Student
+      </a>
+      <button class="logout-btn" id="logoutBtn" style="margin-top:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Log Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title">Student Profile</div>
+        <div class="topbar-sub">View and manage student records</div>
+      </div>
+      <div class="topbar-right">
+        <span class="student-id-badge" id="studentIdTitle">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Loading...
+        </span>
+        <button class="btn btn-outline" id="editProfileBtn" style="display:none;" onclick="goToEditPage()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 1-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit Profile
+        </button>
+      </div>
+    </div>
+
+    <!-- PAGE BODY -->
+    <div class="page">
+      <div id="profileContent">
+        <div class="profile-loading">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          <div class="profile-loading-text">Loading student database...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- STATUS UPDATE MODAL -->
+  <div class="modal-backdrop" id="statusModal">
+    <div class="modal">
+      <h3>Update Status</h3>
+      <p>Change the current enrollment status for this student.</p>
+      <label class="modal-label">Select New Status</label>
+      <select id="newStatusSelect" class="modal-select">
+        <option value="Running">Running</option>
+        <option value="Completed">Completed</option>
+        <option value="Dropped">Dropped</option>
+        <option value="Suspended">Suspended</option>
+        <option value="Next">Next Batch</option>
+      </select>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitStatusUpdate()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ── AUTH ── */
+    const token = localStorage.getItem('adminToken');
+    if (!token) window.location.href = '/index.html';
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('adminToken');
+      window.location.href = '/index.html';
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const studentID = urlParams.get('id');
+
+    /* ── STATUS COLORS ── */
+    const statusColors = {
+      Running: '#3B82F6', Completed: '#10B981',
+      Dropped: '#F59E0B', Suspended: '#EF4444', Next: '#7C3AED'
+    };
+    const statusClasses = {
+      Running: 'status-Running', Completed: 'status-Completed',
+      Dropped: 'status-Dropped', Suspended: 'status-Suspended', Next: 'status-Next'
+    };
+
+    /* ── MODAL ── */
+    function openModal(currentStatus) {
+      document.getElementById('newStatusSelect').value = currentStatus;
+      document.getElementById('statusModal').classList.add('open');
+    }
+    function closeModal() {
+      document.getElementById('statusModal').classList.remove('open');
+    }
+    document.getElementById('statusModal').addEventListener('click', e => {
+      if (e.target === e.currentTarget) closeModal();
+    });
+
+    function goToEditPage() {
+      window.location.href = `/edit-student.html?id=${studentID}`;
+    }
+
+    async function submitStatusUpdate() {
+      const newStatus = document.getElementById('newStatusSelect').value;
+      try {
+        const res = await fetch(`/api/students/${studentID}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ status: newStatus })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeModal();
+          loadStudentProfile();
+        } else { alert("Update failed: " + data.message); }
+      } catch (err) { alert("Server connection error!"); }
+    }
+
+    async function loadStudentProfile() {
+      if (!studentID) {
+        document.getElementById('profileContent').innerHTML = `<div class="profile-error">No student ID provided in URL!</div>`;
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/students/${studentID}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const result = await res.json();
+
+        if (result.success) {
+          const s = result.data;
+          document.getElementById('studentIdTitle').innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            ID: ${s.studentID}
+          `;
+          document.getElementById('editProfileBtn').style.display = 'inline-flex';
+
+          const goals = s.careerProfile?.careerGoal || [];
+          const goalsHtml = goals.length
+            ? goals.map(g => `<span class="goal-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>${g}</span>`).join('')
+            : '<span style="color:var(--text-muted);font-size:13px;">N/A</span>';
+
+          let spouseHtml = '';
+          if (s.maritalStatus === 'Married') {
+            spouseHtml = `
+              <div class="data-item">
+                <div class="data-label">Spouse Info</div>
+                <div class="data-value">${s.spouseInfo?.name || 'N/A'} <span style="color:var(--text-muted);font-size:12px; font-weight:500;">(${s.spouseInfo?.profession || 'N/A'})</span></div>
+              </div>`;
+          }
+
+          const status = s.admissionInfo?.courseStatus || 'N/A';
+          const statusColor = statusColors[status] || '#94A3B8';
+          const statusClass = statusClasses[status] || '';
+
+          document.getElementById('profileContent').innerHTML = `
+            <div class="profile-layout">
+
+              <!-- LEFT COLUMN: SUMMARY & CONTACT -->
+              <div class="panel-card">
+                <div class="user-summary">
+                  <div class="user-summary-bg"></div>
+                  <div class="user-avatar-wrap">
+                    <img src="${s.photoLink}" class="user-avatar" alt="${s.fullName}" onerror="this.src='https://via.placeholder.com/120?text=No+Photo'">
+                  </div>
+                  <h1 class="user-name">${s.fullName}</h1>
+                  <p class="user-edu">${s.educationalBackground || 'Educational background not provided'}</p>
+                  <span class="status-badge ${statusClass}">
+                    <span class="status-badge-dot" style="background:${statusColor}"></span>
+                    ${status} Status
+                  </span>
+                </div>
+
+                <div class="summary-actions">
+                   <button class="btn btn-outline" style="width: 100%;" onclick="openModal('${status}')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                    Update Course Status
+                  </button>
+                </div>
+
+                <div class="quick-contacts">
+                  <div class="contact-item">
+                    <div class="contact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+                    <div class="contact-text">
+                      <span class="contact-label">Phone</span>
+                      <a href="tel:${s.contact?.phone}" class="contact-value">${s.contact?.phone || 'N/A'}</a>
+                    </div>
+                  </div>
+                  <div class="contact-item">
+                    <div class="contact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+                    <div class="contact-text">
+                      <span class="contact-label">Email</span>
+                      <a href="mailto:${s.contact?.email}" class="contact-value">${s.contact?.email || 'N/A'}</a>
+                    </div>
+                  </div>
+                  <div class="contact-item">
+                    <div class="contact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                    <div class="contact-text">
+                      <span class="contact-label">Guardian Phone</span>
+                      <a href="tel:${s.contact?.guardianPhone}" class="contact-value">${s.contact?.guardianPhone || 'N/A'}</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- RIGHT COLUMN: DETAILED INFO -->
+              <div class="details-stack">
+
+                <!-- Card 1: Academic & Admission -->
+                <div class="panel-card">
+                  <div class="section-header">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    <h3>Academic & Admission Summary</h3>
+                  </div>
+                  <div class="section-body data-grid">
+                    <div class="data-item">
+                      <span class="data-label">Course Name</span>
+                      <span class="data-value data-value-highlight">${s.admissionInfo?.courseName || 'N/A'}</span>
+                    </div>
+                    <div class="data-item">
+                      <span class="data-label">Batch & Type</span>
+                      <span class="data-value">${s.admissionInfo?.batchNum || 'N/A'} (${s.admissionInfo?.courseType || 'N/A'})</span>
+                    </div>
+                    <div class="data-item">
+                      <span class="data-label">Highest Education</span>
+                      <span class="data-value">${s.educationalBackground || 'N/A'}</span>
+                    </div>
+                    <div class="data-item">
+                      <span class="data-label">Skills</span>
+                      <span class="data-value">${s.skillsAndLanguages?.skills || 'N/A'}</span>
+                    </div>
+                    <div class="data-item">
+                      <span class="data-label">Languages</span>
+                      <span class="data-value">${s.skillsAndLanguages?.languages || 'N/A'}</span>
+                    </div>
+                    <div class="data-item">
+                      <span class="data-label">Admission Date</span>
+                      <span class="data-value">${s.admissionInfo?.admissionDate ? new Date(s.admissionInfo.admissionDate).toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'}) : '—'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 2: Career & Visa -->
+                <div class="panel-card">
+                  <div class="section-header">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    <h3>Career & Visa Assessment</h3>
+                  </div>
+                  <div class="section-body data-grid">
+                    <div class="data-item" style="grid-column: 1 / -1;">
+                      <span class="data-label">Career Goals</span>
+                      <div class="goal-tags">${goalsHtml}</div>
+                    </div>
+                    <div class="data-item">
+                      <span class="data-label">Passport Status</span>
+                      <span class="data-value">${s.careerProfile?.passportStatus || 'N/A'}</span>
+                    </div>
+                    <div class="data-item">
+                      <span class="data-label">Financial Readiness</span>
+                      <span class="data-value">${s.careerProfile?.financialReadiness || 'N/A'}</span>
+                    </div>
+                    <div class="data-item">
+                      <span class="data-label">English Proficiency</span>
+                      <span class="data-value">${s.careerProfile?.englishProficiency || 'N/A'}</span>
+                    </div>
+                    <div class="data-item">
+                      <span class="data-label">IELTS Score</span>
+                      <span class="data-value" style="font-weight:700;">${s.careerProfile?.ieltsScore || 'None'}</span>
+                    </div>
+                    <div class="data-item">
+                      <span class="data-label">Visa Priority</span>
+                      <span class="data-value ${s.careerProfile?.visaPriority === 'Hot' ? 'data-value-hot' : ''}">${s.careerProfile?.visaPriority || 'Low'}</span>
+                    </div>
+                    <div class="data-item">
+                      <span class="data-label">Preferred Country</span>
+                      <span class="data-value">${s.careerProfile?.expectedCountry || 'N/A'}</span>
+                    </div>
+                    <div class="data-item">
+                      <span class="data-label">Job Sector</span>
+                      <span class="data-value">${s.careerProfile?.preferredSector || 'N/A'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 3: Personal & Family -->
+                <div class="panel-card">
+                  <div class="section-header">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9.5" cy="11.5" r="1.5"/><circle cx="14.5" cy="11.5" r="1.5"/><path d="M7 16h10"/></svg>
+                    <h3>Personal & Family Details</h3>
+                  </div>
+                  <div class="section-body data-grid">
+                    <div class="data-item">
+                      <span class="data-label">Date of Birth</span>
+                      <span class="data-value">${s.dob ? new Date(s.dob).toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'}) : '—'}</span>
+                    </div>
+                    <div class="data-item">
+                      <span class="data-label">Gender</span>
+                      <span class="data-value">${s.gender || '—'}</span>
+                    </div>
+                    <div class="data-item">
+                      <span class="data-label">Blood Group</span>
+                      <span class="data-value">${s.bloodGroup || 'N/A'}</span>
+                    </div>
+                    <div class="data-item">
+                      <span class="data-label">Religion</span>
+                      <span class="data-value">${s.religion || 'N/A'}</span>
+                    </div>
+                    <div class="data-item">
+                      <span class="data-label">Marital Status</span>
+                      <span class="data-value">${s.maritalStatus || '—'}</span>
+                    </div>
+                    ${spouseHtml}
+                    <div class="data-item" style="grid-column: 1 / -1;">
+                      <span class="data-label">Govt ID (NID/Birth Cert)</span>
+                      <div><span class="data-value-mono">${s.nidOrBirthCert || '—'}</span></div>
+                    </div>
+                    <div class="data-item" style="grid-column: 1 / -1;">
+                      <span class="data-label">Full Permanent Address</span>
+                      <span class="data-value" style="color:var(--text-secondary); line-height:1.5;">${s.contact?.fullAddress || '—'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 4: Family Info -->
+                <div class="panel-card">
+                  <div class="section-header">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <h3>Family Information</h3>
+                  </div>
+                  <div class="section-body data-grid">
+                    <div class="data-item">
+                      <span class="data-label">Father's Name & Profession</span>
+                      <span class="data-value">${s.parentsInfo?.fatherName || 'N/A'} (${s.parentsInfo?.fatherProfession || 'N/A'})</span>
+                    </div>
+                    <div class="data-item">
+                      <span class="data-label">Mother's Name & Profession</span>
+                      <span class="data-value">${s.parentsInfo?.motherName || 'N/A'} (${s.parentsInfo?.motherProfession || 'N/A'})</span>
+                    </div>
+                    <div class="data-item">
+                      <span class="data-label">Assigned Guardian</span>
+                      <span class="data-value">${s.contact?.guardianName || '—'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 5: Admin Note -->
+                <div class="panel-card">
+                  <div class="section-header">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    <h3>Admin Follow-up Note</h3>
+                  </div>
+                  <div class="section-body">
+                    <div class="admin-note">
+                      ${s.comment || 'No follow-up notes recorded yet.'}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          `;
+        } else {
+          document.getElementById('profileContent').innerHTML = `<div class="profile-error">${result.message}</div>`;
+        }
+      } catch (err) {
+        document.getElementById('profileContent').innerHTML = `<div class="profile-error">Server connection error! Please try again.</div>`;
+      }
+    }
+
+    loadStudentProfile();
+  </script>
+</body>
+</html>

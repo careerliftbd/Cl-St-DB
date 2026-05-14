@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Next Batch | Careerlift Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F8FAFC;
+      --primary: #3B82F6;
+      --primary-dark: #2563EB;
+      --primary-light: #EFF6FF;
+      --accent: #10B981;
+      --accent-light: #ECFDF5;
+      --surface: #FFFFFF;
+      --text: #1E293B;
+      --text-secondary: #64748B;
+      --text-muted: #94A3B8;
+      --border: #E2E8F0;
+      --border-light: #F1F5F9;
+      --sidebar-w: 240px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow: 0 4px 16px rgba(0,0,0,.06), 0 1px 4px rgba(0,0,0,.04);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-xs: 6px;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      font-size: 14px;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--text);
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; bottom: 0;
+      z-index: 100; overflow: hidden;
+    }
+    .sidebar-logo {
+      padding: 22px 20px 18px;
+      display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .logo-mark {
+      width: 32px; height: 32px; background: var(--primary);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .logo-text { font-size: 14px; font-weight: 700; color: #fff; letter-spacing: -.01em; }
+    .logo-sub  { font-size: 10px; color: rgba(255,255,255,.4); font-weight: 400; letter-spacing: .04em; text-transform: uppercase; }
+
+    .sidebar nav { padding: 16px 12px; flex: 1; overflow-y: auto; }
+    .nav-section { margin-bottom: 20px; }
+    .nav-label {
+      font-size: 10px; font-weight: 600; color: rgba(255,255,255,.3);
+      text-transform: uppercase; letter-spacing: .08em;
+      padding: 0 8px; margin-bottom: 6px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 10px; border-radius: var(--radius-sm);
+      color: rgba(255,255,255,.55);
+      text-decoration: none; font-size: 13px; font-weight: 500;
+      transition: all .15s; margin-bottom: 2px;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.85); }
+    .nav-item.active { background: rgba(59,130,246,.25); color: #93C5FD; }
+    .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .nav-add {
+      margin: 4px 8px; padding: 9px 12px;
+      background: var(--primary); border-radius: var(--radius-sm);
+      color: #fff; font-size: 13px; font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+      text-decoration: none; transition: background .15s;
+    }
+    .nav-add:hover { background: var(--primary-dark); }
+    .sidebar-footer { padding: 14px 12px; border-top: 1px solid rgba(255,255,255,.08); }
+    .logout-btn {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 10px; width: 100%;
+      border-radius: var(--radius-sm); background: none; border: none;
+      cursor: pointer; color: rgba(255,255,255,.4);
+      font-size: 13px; font-weight: 500; font-family: inherit; transition: all .15s;
+    }
+    .logout-btn:hover { background: rgba(239,68,68,.15); color: #FCA5A5; }
+
+    /* ── MAIN ── */
+    .main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 28px; height: 58px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-left { display: flex; flex-direction: column; gap: 1px; }
+    .topbar-title { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
+    .topbar-sub   { font-size: 11px; color: var(--text-muted); }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; background: var(--primary); color: #fff;
+      border: none; border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 600; font-family: inherit;
+      cursor: pointer; transition: all .15s; text-decoration: none;
+    }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,.3); }
+
+    /* ── PAGE ── */
+    .page { padding: 24px 28px; }
+
+    /* ── FILTER BAR ── */
+    .filter-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow-sm);
+      padding: 16px 20px; margin-bottom: 16px;
+      display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+      justify-content: space-between;
+    }
+    .filter-left { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; flex: 1; }
+
+    .search-wrap { position: relative; flex: 1; min-width: 220px; max-width: 300px; }
+    .search-icon {
+      position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); pointer-events: none;
+    }
+    .search-box {
+      width: 100%; padding: 8px 12px 8px 34px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-family: inherit; font-size: 13px; color: var(--text);
+      background: var(--bg); outline: none; transition: all .15s;
+    }
+    .search-box:focus { border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
+    .search-box::placeholder { color: var(--text-muted); }
+
+    .filter-select {
+      padding: 8px 12px; border: 1px solid var(--border);
+      border-radius: var(--radius-sm); font-family: inherit;
+      font-size: 13px; color: var(--text); background: var(--bg);
+      outline: none; cursor: pointer; transition: all .15s;
+    }
+    .filter-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
+
+    .filter-right { display: flex; gap: 8px; align-items: center; }
+    .result-count {
+      font-size: 12px; color: var(--text-muted); white-space: nowrap;
+      padding: 6px 12px; background: var(--border-light);
+      border-radius: 20px; font-weight: 500;
+    }
+    .result-count strong { color: var(--text); }
+
+    .btn-export {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; background: var(--accent-light);
+      color: #065F46; border: 1px solid #A7F3D0;
+      border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 600; font-family: inherit;
+      cursor: pointer; transition: all .15s;
+    }
+    .btn-export:hover { background: #D1FAE5; transform: translateY(-1px); }
+    .btn-export:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    /* ── TABLE CARD ── */
+    .table-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+    .data-table thead tr { background: var(--border-light); }
+    .data-table th {
+      padding: 11px 16px; color: var(--text-muted);
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .07em;
+      border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    .data-table td {
+      padding: 13px 16px; border-bottom: 1px solid var(--border-light);
+      color: var(--text); vertical-align: middle;
+    }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr { transition: background .1s; cursor: pointer; }
+    .data-table tbody tr:hover { background: #F8FAFD; }
+    .data-table tbody tr:hover .row-actions { opacity: 1; }
+
+    .student-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      object-fit: cover; border: 2px solid var(--border);
+      background: var(--border-light); flex-shrink: 0;
+    }
+    .student-name { font-weight: 600; color: var(--text); font-size: 13px; }
+    .student-edu  { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+    .student-id {
+      font-family: monospace; font-size: 12px; font-weight: 700;
+      color: var(--primary); background: var(--primary-light);
+      padding: 3px 8px; border-radius: var(--radius-xs);
+      border: 1px solid #BFDBFE; white-space: nowrap;
+    }
+
+    .contact-phone { font-weight: 500; color: var(--text); }
+    .contact-sub   { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 9px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; white-space: nowrap;
+    }
+    .badge-dot { width: 5px; height: 5px; border-radius: 50%; }
+    .status-Next { background: #F5F3FF; color: #5B21B6; border: 1px solid #DDD6FE; }
+
+    .goal-tags { display: flex; flex-wrap: wrap; gap: 4px; max-width: 180px; }
+    .goal-tag {
+      padding: 2px 7px; border-radius: 4px;
+      font-size: 10px; font-weight: 600;
+      background: var(--border-light); color: var(--text-secondary);
+    }
+
+    .row-actions { display: flex; gap: 6px; opacity: 0; transition: opacity .15s; }
+    .action-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 10px; border-radius: var(--radius-xs);
+      font-size: 11px; font-weight: 600; font-family: inherit;
+      cursor: pointer; transition: all .15s; border: 1px solid;
+    }
+    .btn-view { background: var(--primary-light); color: var(--primary-dark); border-color: #BFDBFE; }
+    .btn-view:hover { background: #DBEAFE; }
+    .btn-delete { background: #FEF2F2; color: #DC2626; border-color: #FECACA; }
+    .btn-delete:hover { background: #FEE2E2; }
+
+    .table-state {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 60px 20px; gap: 10px; text-align: center;
+    }
+    .state-icon { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 4px; }
+    .state-title { font-size: 14px; font-weight: 600; color: var(--text); }
+    .state-sub   { font-size: 13px; color: var(--text-muted); }
+
+    .skeleton {
+      display: block; border-radius: 4px;
+      background: linear-gradient(90deg, var(--border-light) 25%, var(--border) 50%, var(--border-light) 75%);
+      background-size: 200% 100%; animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .sk-avatar { width: 36px; height: 36px; border-radius: 50%; }
+    .sk-text   { height: 12px; border-radius: 4px; }
+    .sk-badge  { height: 20px; width: 72px; border-radius: 20px; }
+
+    .pagination {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px; border-top: 1px solid var(--border);
+      background: var(--border-light);
+    }
+    .page-info { font-size: 12px; color: var(--text-muted); }
+    .page-btns { display: flex; gap: 4px; }
+    .page-btn {
+      padding: 5px 10px; border-radius: var(--radius-xs);
+      border: 1px solid var(--border); background: var(--surface);
+      font-size: 12px; font-weight: 600; font-family: inherit;
+      cursor: pointer; color: var(--text-secondary); transition: all .15s;
+      min-width: 32px; text-align: center;
+    }
+    .page-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+    .page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .page-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(15,23,42,.45);
+      z-index: 200; display: none; align-items: center; justify-content: center;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--surface); border-radius: var(--radius);
+      box-shadow: 0 20px 60px rgba(0,0,0,.18);
+      padding: 28px; max-width: 400px; width: 90%;
+      animation: modalIn .2s ease;
+    }
+    @keyframes modalIn { from { transform: scale(.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .modal-icon { width: 48px; height: 48px; border-radius: 50%; background: #FEF2F2; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+    .modal h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .modal p  { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+    .btn-cancel { padding: 8px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; color: var(--text-secondary); transition: all .15s; }
+    .btn-cancel:hover { background: var(--border-light); }
+    .btn-danger { padding: 8px 16px; border: none; border-radius: var(--radius-sm); background: #DC2626; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; color: #fff; transition: all .15s; }
+    .btn-danger:hover { background: #B91C1C; }
+    .btn-danger:disabled { opacity: .6; cursor: not-allowed; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinning { animation: spin .7s linear infinite; }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">CL</div>
+      <div>
+        <div class="logo-text">Careerlift</div>
+        <div class="logo-sub">Admin Panel</div>
+      </div>
+    </div>
+    <nav>
+      <div class="nav-section">
+        <div class="nav-label">Overview</div>
+        <a href="dashboard.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Students</div>
+        <a href="all-students.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          All Students
+        </a>
+        <a href="running-students.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Running Students
+        </a>
+        <a href="alumni.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          Alumni
+        </a>
+        <a href="next-batch.html" class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+          Next Batch
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="add-student.html" class="nav-add">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add New Student
+      </a>
+      <button class="logout-btn" id="logoutBtn" style="margin-top:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Log Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title">Next Batch Candidates</div>
+        <div class="topbar-sub" id="topbarSub">Loading…</div>
+      </div>
+      <a href="add-student.html" class="btn-primary">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add New Student
+      </a>
+    </div>
+
+    <div class="page">
+      <div class="filter-card">
+        <div class="filter-left">
+          <div class="search-wrap">
+            <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="searchBox" class="search-box" placeholder="Search name, ID or phone…">
+          </div>
+          <select id="goalFilter" class="filter-select">
+            <option value="">All Career Goals</option>
+            <option value="Study Abroad">Study Abroad</option>
+            <option value="Work Visa">Work Visa</option>
+            <option value="Freelancing">Freelancing</option>
+            <option value="Govt Job">Govt Job</option>
+          </select>
+          <button id="clearFiltersBtn" onclick="clearFilters()" style="padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text-muted);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;display:none;transition:all .15s;">
+            ✕ Clear
+          </button>
+        </div>
+        <div class="filter-right">
+          <div class="result-count" id="resultCount"><strong>—</strong> candidates</div>
+          <button class="btn-export" id="exportBtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export Excel
+          </button>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:44px;"></th>
+              <th>Student ID</th>
+              <th>Student</th>
+              <th>Contact</th>
+              <th>Course / Batch</th>
+              <th>Career Goals</th>
+              <th>Status</th>
+              <th style="width:110px;"></th>
+            </tr>
+          </thead>
+          <tbody id="studentTableBody">
+            <tr class="skeleton-row"><td><span class="skeleton sk-avatar"></span></td><td><span class="skeleton sk-text" style="width:80px"></span></td><td><span class="skeleton sk-text" style="width:140px"></span></td><td><span class="skeleton sk-text" style="width:100px"></span></td><td><span class="skeleton sk-text" style="width:110px"></span></td><td><span class="skeleton sk-text" style="width:90px"></span></td><td><span class="skeleton sk-badge"></span></td><td></td></tr>
+            <tr class="skeleton-row"><td><span class="skeleton sk-avatar"></span></td><td><span class="skeleton sk-text" style="width:70px"></span></td><td><span class="skeleton sk-text" style="width:160px"></span></td><td><span class="skeleton sk-text" style="width:90px"></span></td><td><span class="skeleton sk-text" style="width:120px"></span></td><td><span class="skeleton sk-text" style="width:80px"></span></td><td><span class="skeleton sk-badge"></span></td><td></td></tr>
+            <tr class="skeleton-row"><td><span class="skeleton sk-avatar"></span></td><td><span class="skeleton sk-text" style="width:85px"></span></td><td><span class="skeleton sk-text" style="width:130px"></span></td><td><span class="skeleton sk-text" style="width:105px"></span></td><td><span class="skeleton sk-text" style="width:100px"></span></td><td><span class="skeleton sk-text" style="width:100px"></span></td><td><span class="skeleton sk-badge"></span></td><td></td></tr>
+            <tr class="skeleton-row"><td><span class="skeleton sk-avatar"></span></td><td><span class="skeleton sk-text" style="width:75px"></span></td><td><span class="skeleton sk-text" style="width:155px"></span></td><td><span class="skeleton sk-text" style="width:95px"></span></td><td><span class="skeleton sk-text" style="width:115px"></span></td><td><span class="skeleton sk-text" style="width:85px"></span></td><td><span class="skeleton sk-badge"></span></td><td></td></tr>
+            <tr class="skeleton-row"><td><span class="skeleton sk-avatar"></span></td><td><span class="skeleton sk-text" style="width:88px"></span></td><td><span class="skeleton sk-text" style="width:145px"></span></td><td><span class="skeleton sk-text" style="width:100px"></span></td><td><span class="skeleton sk-text" style="width:105px"></span></td><td><span class="skeleton sk-text" style="width:95px"></span></td><td><span class="skeleton sk-badge"></span></td><td></td></tr>
+          </tbody>
+        </table>
+        <div class="pagination" id="paginationBar" style="display:none;">
+          <div class="page-info" id="pageInfo"></div>
+          <div class="page-btns" id="pageBtns"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- DELETE MODAL -->
+  <div class="modal-backdrop" id="deleteModal">
+    <div class="modal">
+      <div class="modal-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      </div>
+      <h3>Delete Student?</h3>
+      <p id="deleteModalMsg">This action is permanent and cannot be undone.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+        <button class="btn-danger" id="confirmDeleteBtn">Delete Student</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('adminToken');
+    if (!token) window.location.href = '/index.html';
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('adminToken');
+      window.location.href = '/index.html';
+    });
+
+    let allStudents = [];
+    let filtered    = [];
+    let currentPage = 1;
+    const PAGE_SIZE = 15;
+    let deleteTargetId = null;
+    let searchTimeout  = null;
+
+    function avatarFallback(name) {
+      const initials = (name || '?').split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase();
+      return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Crect width='36' height='36' fill='%23EFF6FF'/%3E%3Ctext x='18' y='24' font-size='13' font-weight='700' text-anchor='middle' fill='%232563EB' font-family='sans-serif'%3E${encodeURIComponent(initials)}%3C/text%3E%3C/svg%3E`;
+    }
+
+    function applyFilters() {
+      const search = document.getElementById('searchBox').value.toLowerCase().trim();
+      const goal   = document.getElementById('goalFilter').value;
+
+      filtered = allStudents.filter(s => {
+        const matchSearch = !search ||
+          (s.fullName || '').toLowerCase().includes(search) ||
+          (s.studentID || '').toLowerCase().includes(search) ||
+          (s.contact?.phone || '').includes(search);
+        const matchGoal = !goal || (s.careerProfile?.careerGoal || []).includes(goal);
+        return matchSearch && matchGoal;
+      });
+
+      const hasFilters = search || goal;
+      document.getElementById('clearFiltersBtn').style.display = hasFilters ? 'block' : 'none';
+      currentPage = 1;
+      renderTable();
+    }
+
+    function clearFilters() {
+      document.getElementById('searchBox').value = '';
+      document.getElementById('goalFilter').value = '';
+      document.getElementById('clearFiltersBtn').style.display = 'none';
+      applyFilters();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('studentTableBody');
+      const total = filtered.length;
+      const pages = Math.ceil(total / PAGE_SIZE);
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const slice = filtered.slice(start, start + PAGE_SIZE);
+
+      document.getElementById('resultCount').innerHTML = `<strong>${total}</strong> candidate${total !== 1 ? 's' : ''}`;
+      document.getElementById('topbarSub').textContent = `${allStudents.length} total · ${total} shown`;
+
+      if (total === 0) {
+        tbody.innerHTML = `<tr><td colspan="8"><div class="table-state"><div class="state-icon" style="background:#F1F5F9;font-size:24px;">🔍</div><div class="state-title">No next batch candidates found</div><div class="state-sub">Try adjusting your search or filters</div></div></td></tr>`;
+        document.getElementById('paginationBar').style.display = 'none';
+        return;
+      }
+
+      tbody.innerHTML = slice.map(s => {
+        const goals = (s.careerProfile?.careerGoal || []).slice(0, 3);
+        const goalTags = goals.map(g => `<span class="goal-tag">${g}</span>`).join('');
+        const fallback = avatarFallback(s.fullName);
+        return `
+          <tr onclick="viewProfile('${s.studentID}')">
+            <td><img src="${s.photoLink || ''}" class="student-avatar" alt="${s.fullName}" onerror="this.src='${fallback}'"></td>
+            <td><span class="student-id">${s.studentID}</span></td>
+            <td>
+              <div class="student-name">${s.fullName}</div>
+              <div class="student-edu">${s.educationalBackground || '—'}</div>
+            </td>
+            <td>
+              <div class="contact-phone">${s.contact?.phone || '—'}</div>
+              <div class="contact-sub">${s.contact?.email || ''}</div>
+            </td>
+            <td>
+              <div style="font-weight:500;color:var(--text);font-size:13px;">${s.admissionInfo?.courseName || '—'}</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:1px;">Batch ${s.admissionInfo?.batchNum || '—'}</div>
+            </td>
+            <td><div class="goal-tags">${goalTags || '<span style="color:var(--text-muted);font-size:11px;">—</span>'}</div></td>
+            <td><span class="badge status-Next"><span class="badge-dot" style="background:#7C3AED"></span>Next Batch</span></td>
+            <td onclick="event.stopPropagation()">
+              <div class="row-actions">
+                <button class="action-btn btn-view" onclick="viewProfile('${s.studentID}')">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  View
+                </button>
+                <button class="action-btn btn-delete" onclick="openDeleteModal('${s.studentID}', '${s.fullName.replace(/'/g,"\\'")}')">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                </button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+
+      const pBar = document.getElementById('paginationBar');
+      if (pages <= 1) { pBar.style.display = 'none'; return; }
+      pBar.style.display = 'flex';
+      document.getElementById('pageInfo').textContent = `Showing ${start + 1}–${Math.min(start + PAGE_SIZE, total)} of ${total}`;
+
+      const btnContainer = document.getElementById('pageBtns');
+      btnContainer.innerHTML = '';
+      const makeBtn = (label, page, disabled = false, active = false) => {
+        const btn = document.createElement('button');
+        btn.className = 'page-btn' + (active ? ' active' : '');
+        btn.textContent = label; btn.disabled = disabled;
+        btn.onclick = () => { currentPage = page; renderTable(); };
+        return btn;
+      };
+      btnContainer.appendChild(makeBtn('←', currentPage - 1, currentPage === 1));
+      let pageNums = pages <= 7 ? Array.from({ length: pages }, (_, i) => i + 1) : [1];
+      if (pages > 7) {
+        if (currentPage > 3) pageNums.push('…');
+        for (let p = Math.max(2, currentPage - 1); p <= Math.min(pages - 1, currentPage + 1); p++) pageNums.push(p);
+        if (currentPage < pages - 2) pageNums.push('…');
+        pageNums.push(pages);
+      }
+      pageNums.forEach(p => {
+        if (p === '…') { const sep = document.createElement('span'); sep.textContent = '…'; sep.style.cssText = 'padding:5px 4px;font-size:12px;color:var(--text-muted)'; btnContainer.appendChild(sep); }
+        else btnContainer.appendChild(makeBtn(p, p, false, p === currentPage));
+      });
+      btnContainer.appendChild(makeBtn('→', currentPage + 1, currentPage === pages));
+    }
+
+    async function loadStudents() {
+      try {
+        const res    = await fetch('/api/students?status=Next', { headers: { 'Authorization': `Bearer ${token}` } });
+        const result = await res.json();
+        if (!result.success) throw new Error(result.message);
+        allStudents = result.data;
+        applyFilters();
+      } catch (err) {
+        document.getElementById('studentTableBody').innerHTML = `<tr><td colspan="8"><div class="table-state"><div class="state-icon" style="background:#FEF2F2;font-size:22px;">🔌</div><div class="state-title">Server connection error</div><div class="state-sub">${err.message}</div></div></td></tr>`;
+        document.getElementById('topbarSub').textContent = 'Failed to load';
+      }
+    }
+
+    function viewProfile(id) { window.location.href = `/student-profile.html?id=${id}`; }
+
+    function openDeleteModal(id, name) {
+      deleteTargetId = id;
+      document.getElementById('deleteModalMsg').textContent = `You are about to permanently delete ${name} (ID: ${id}). This action cannot be undone.`;
+      document.getElementById('deleteModal').classList.add('open');
+    }
+    function closeDeleteModal() {
+      document.getElementById('deleteModal').classList.remove('open');
+      deleteTargetId = null;
+    }
+    document.getElementById('deleteModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeDeleteModal(); });
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+      if (!deleteTargetId) return;
+      const btn = document.getElementById('confirmDeleteBtn');
+      btn.textContent = 'Deleting…'; btn.disabled = true;
+      try {
+        const res  = await fetch(`/api/students/${deleteTargetId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        if (data.success) { closeDeleteModal(); loadStudents(); }
+        else alert(data.message);
+      } catch { alert('Delete failed — server error.'); }
+      finally { btn.textContent = 'Delete Student'; btn.disabled = false; }
+    });
+
+    document.getElementById('exportBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('exportBtn');
+      const orig = btn.innerHTML;
+      btn.innerHTML = `<svg class="spinning" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Preparing…`;
+      btn.disabled = true;
+      const search = document.getElementById('searchBox').value;
+      const goal   = document.getElementById('goalFilter').value;
+      try {
+        const res = await fetch(`/api/students/export?search=${search}&status=Next&goal=${goal}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) {
+          const blob = await res.blob();
+          const url  = window.URL.createObjectURL(blob);
+          const a    = document.createElement('a');
+          a.href = url; a.download = `Careerlift_NextBatch_${new Date().toISOString().split('T')[0]}.xlsx`;
+          document.body.appendChild(a); a.click(); a.remove();
+        } else alert('Export failed. Please try again.');
+      } catch { alert('Server connection error.'); }
+      finally { btn.innerHTML = orig; btn.disabled = false; }
+    });
+
+    document.getElementById('searchBox').addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(applyFilters, 280); });
+    document.getElementById('goalFilter').addEventListener('change', applyFilters);
+
+    loadStudents();
+  </script>
+</body>
+</html>
