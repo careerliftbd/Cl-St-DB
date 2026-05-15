@@ -215,3 +215,23 @@ exports.exportStudentsExcel = async (req, res) => {
         res.status(500).json({ success: false, message: 'এক্সেল তৈরিতে সমস্যা হয়েছে!' });
     }
 };
+
+// @desc    Get public alumni data for LMS website
+// @route   GET /api/students/public-alumni
+// @access  Public (No token required)
+exports.getPublicAlumni = async (req, res) => {
+    try {
+        const alumni = await Student.find({ 'admissionInfo.courseStatus': 'Completed' })
+            .select('fullName photoLink admissionInfo.courseName admissionInfo.batchNum admissionInfo.courseStatus -_id')
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({
+            success: true,
+            count: alumni.length,
+            data: alumni
+        });
+    } catch (error) {
+        console.error("Public Alumni API Error:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+};
