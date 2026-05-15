@@ -298,6 +298,7 @@
   </style>
   <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
 
@@ -313,33 +314,33 @@
     <nav>
       <div class="nav-section">
         <div class="nav-label">Overview</div>
-        <a href="dashboard.html" class="nav-item">
+        <a href="/dashboard" class="nav-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
           Dashboard
         </a>
       </div>
       <div class="nav-section">
         <div class="nav-label">Students</div>
-        <a href="all-students.html" class="nav-item active">
+        <a href="/all-students" class="nav-item active">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           All Students
         </a>
-        <a href="running-students.html" class="nav-item">
+        <a href="/running-students" class="nav-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           Running Students
         </a>
-        <a href="alumni.html" class="nav-item">
+        <a href="/alumni" class="nav-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
           Alumni
         </a>
-        <a href="next-batch.html" class="nav-item">
+        <a href="/next-batch" class="nav-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
           Next Batch
         </a>
       </div>
     </nav>
     <div class="sidebar-footer">
-      <a href="add-student.html" class="nav-add">
+      <a href="/add-student" class="nav-add">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add New Student
       </a>
@@ -413,6 +414,21 @@
     const urlParams = new URLSearchParams(window.location.search);
     const studentID = urlParams.get('id');
 
+    // ✅ Error handling — no student ID provided
+    if (!studentID) {
+        document.getElementById('profileContent').innerHTML = `
+            <div class="profile-error" style="text-align:center; padding:50px;">
+                <h2 style="color:#EF4444; margin-bottom:10px;">⚠️ No Student ID Provided</h2>
+                <p style="color:#64748B;">Please access this page from the student list.</p>
+                <a href="/all-students" style="color:#3B82F6; text-decoration:none; font-weight:600;">
+                    ← Back to All Students
+                </a>
+            </div>
+        `;
+        document.getElementById('studentIdTitle').innerHTML = 'Error';
+        throw new Error('No student ID in URL');
+    }
+
     /* ── STATUS COLORS ── */
     const statusColors = {
       Running: '#3B82F6', Completed: '#10B981',
@@ -436,7 +452,7 @@
     });
 
     function goToEditPage() {
-      window.location.href = `/edit-student.html?id=${studentID}`;
+      window.location.href = `/edit-student?id=${studentID}`;
     }
 
     async function submitStatusUpdate() {

@@ -7,6 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+    /* আগের সব CSS ঠিক আছে, কিছুই পরিবর্তন করতে হবে না */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -347,26 +348,31 @@
     <nav>
       <div class="nav-section">
         <div class="nav-label">Overview</div>
-        <a href="dashboard.html" class="nav-item active">
+        <!-- ✅ ক্লিন URL: /dashboard -->
+        <a href="/dashboard" class="nav-item active">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
           Dashboard
         </a>
       </div>
       <div class="nav-section">
         <div class="nav-label">Students</div>
-        <a href="all-students.html" class="nav-item">
+        <!-- ✅ ক্লিন URL: /all-students -->
+        <a href="/all-students" class="nav-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           All Students
         </a>
-        <a href="running-students.html" class="nav-item">
+        <!-- ✅ ক্লিন URL: /running-students -->
+        <a href="/running-students" class="nav-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           Running Students
         </a>
-        <a href="alumni.html" class="nav-item">
+        <!-- ✅ ক্লিন URL: /alumni -->
+        <a href="/alumni" class="nav-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
           Alumni
         </a>
-        <a href="next-batch.html" class="nav-item">
+        <!-- ✅ ক্লিন URL: /next-batch -->
+        <a href="/next-batch" class="nav-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
           Next Batch
         </a>
@@ -374,7 +380,8 @@
     </nav>
 
     <div class="sidebar-footer">
-      <a href="add-student.html" class="nav-add">
+      <!-- ✅ ক্লিন URL: /add-student -->
+      <a href="/add-student" class="nav-add">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add New Student
       </a>
@@ -414,25 +421,29 @@
 
       <!-- QUICK LINKS -->
       <div class="quick-grid">
-        <a href="all-students.html" class="quick-link">
+        <!-- ✅ ক্লিন URL: /all-students -->
+        <a href="/all-students" class="quick-link">
           <div class="quick-link-icon" style="background:var(--primary-light)">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
           </div>
           All Students
         </a>
-        <a href="running-students.html" class="quick-link">
+        <!-- ✅ ক্লিন URL: /running-students -->
+        <a href="/running-students" class="quick-link">
           <div class="quick-link-icon" style="background:var(--accent-light)">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           </div>
           Running Students
         </a>
-        <a href="alumni.html" class="quick-link">
+        <!-- ✅ ক্লিন URL: /alumni -->
+        <a href="/alumni" class="quick-link">
           <div class="quick-link-icon" style="background:#F5F3FF">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
           </div>
           Alumni
         </a>
-        <a href="add-student.html" class="quick-link">
+        <!-- ✅ ক্লিন URL: /add-student -->
+        <a href="/add-student" class="quick-link">
           <div class="quick-link-icon" style="background:#FFF7ED">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           </div>
