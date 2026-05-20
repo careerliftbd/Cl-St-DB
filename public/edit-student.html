@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Edit Student | Careerlift Admin</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- SweetAlert2 CDN for modern alerts -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -240,8 +242,6 @@
     .id-row select { flex: 1; }
     .id-row input { flex: 3; }
   </style>
-  <base target="_blank">
-<base target="_blank">
 </head>
 <body>
 
@@ -363,10 +363,17 @@
                 <option value="Married">Married</option>
               </select>
             </div>
+            
+            <!-- FIXED: Spouse Fields (Name & Profession) -->
             <div class="form-group spouse-field">
-              <label>Spouse Name</label>
-              <input type="text" id="spouseName">
+              <label>Husband / Wife Name</label>
+              <input type="text" id="spouseName" placeholder="Spouse Name">
             </div>
+            <div class="form-group spouse-field">
+              <label>Spouse Profession</label>
+              <input type="text" id="spouseProfession" placeholder="Profession">
+            </div>
+
             <div class="form-group full-width">
               <label>ID Number *</label>
               <div class="id-row">
@@ -389,58 +396,17 @@
             </div>
           </div>
 
-          <!-- Academic & Course -->
+          <!-- Academic & Course (Only to update basic info, NOT array manipulation here) -->
           <div class="section-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-            Academic & Course
+            Academic & Skills
           </div>
           <div class="form-grid">
             <div class="form-group full-width">
               <label>Highest Education *</label>
               <input type="text" id="educationalBackground" required placeholder="HSC Pass / B.Sc in CSE">
             </div>
-            <div class="form-group">
-              <label>Course Name *</label>
-              <select id="courseName" required>
-                <option value="">Select Course</option>
-                <option value="Primary Healthcare Service Level 2">Primary Healthcare Service Level 2</option>
-                <option value="Dementia Caregiving (Level 3)">Dementia Caregiving (Level 3)</option>
-                <option value="Dementia Caregiving (Level 2)">Dementia Caregiving (Level 2)</option>
-                <option value="Caregiving for Persons with Special Needs (Level-3)">Caregiving for Persons with Special Needs (Level-3)</option>
-                <option value="Caregiving for Persons with Special Needs (Level-2)">Caregiving for Persons with Special Needs (Level-2)</option>
-                <option value="English for Work (Level 2)">English for Work (Level 2)</option>
-                <option value="English for Work (Level 3)">English for Work (Level 3)</option>
-                <option value="Skin Care (Level 3)">Skin Care (Level 3)</option>
-                <option value="Skin Care (Level 2)">Skin Care (Level 2)</option>
-                <option value="Japanese Language (Level-2)">Japanese Language (Level-2)</option>
-                <option value="Japanese Language (Level-3)">Japanese Language (Level-3)</option>
-                <option value="Caregiving For Infant, Toddler and Children Level: 02">Caregiving For Infant, Toddler and Children Level: 02</option>
-                <option value="Caregiving For Elderly Persons Level: 02">Caregiving For Elderly Persons Level: 02</option>
-                <option value="Caregiving For Infant, Toddler and Children Level: 03">Caregiving For Infant, Toddler and Children Level: 03</option>
-                <option value="Caregiving For Elderly Persons Level: 03">Caregiving For Elderly Persons Level: 03</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Batch Number *</label>
-              <input type="text" id="batchNum" required>
-            </div>
-            <div class="form-group">
-              <label>Course Type *</label>
-              <select id="courseType">
-                <option value="Paid">Paid</option>
-                <option value="Free">Free</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Course Status *</label>
-              <select id="courseStatus">
-                <option value="Running">Running</option>
-                <option value="Completed">Completed</option>
-                <option value="Dropped">Dropped</option>
-                <option value="Suspended">Suspended</option>
-                <option value="Next">Next Batch</option>
-              </select>
-            </div>
+            <!-- NOTE: Course name and batch updating is removed from generic edit, as they belong to specific enrollments array now -->
             <div class="form-group">
               <label>Skills</label>
               <input type="text" id="skills" placeholder="Basic Computer, Driving">
@@ -554,7 +520,7 @@
       window.location.href = '/index.html';
     });
 
-    /* ── TOGGLE SPOUSE ── */
+    /* ── TOGGLE SPOUSE (Fixed to show both fields) ── */
     function toggleSpouse(status) {
       document.querySelectorAll('.spouse-field').forEach(f => {
         f.style.display = status === 'Married' ? 'flex' : 'none';
@@ -568,6 +534,7 @@
       try {
         const res = await fetch(`/api/students/${studentID}`, { headers: { 'Authorization': `Bearer ${token}` } });
         const result = await res.json();
+        
         if (result.success) {
           const s = result.data;
           document.getElementById('displayID').textContent = `ID: ${s.studentID}`;
@@ -579,19 +546,22 @@
           document.getElementById('gender').value = s.gender;
           document.getElementById('bloodGroup').value = s.bloodGroup || '';
           document.getElementById('religion').value = s.religion || '';
+          
           document.getElementById('maritalStatus').value = s.maritalStatus;
-          toggleSpouse(s.maritalStatus);
-          if (s.spouseInfo) document.getElementById('spouseName').value = s.spouseInfo.name || '';
+          toggleSpouse(s.maritalStatus); // Call toggle immediately to set correct display
+          
+          if (s.spouseInfo) {
+            document.getElementById('spouseName').value = s.spouseInfo.name || '';
+            document.getElementById('spouseProfession').value = s.spouseInfo.profession || ''; // Load profession
+          }
 
-          // ID parsing
-          if (s.nidOrBirthCert) {
-            const parts = s.nidOrBirthCert.split(': ');
-            if (parts.length === 2) {
-              document.getElementById('idType').value = parts[0];
-              document.getElementById('nidOrBirthCert').value = parts[1];
-            } else {
-              document.getElementById('nidOrBirthCert').value = s.nidOrBirthCert;
-            }
+          // ID parsing (NID or Birth Cert)
+          if (s.documents && s.documents.nid) {
+            document.getElementById('idType').value = 'NID';
+            document.getElementById('nidOrBirthCert').value = s.documents.nid;
+          } else if (s.documents && s.documents.birthCertificate) {
+            document.getElementById('idType').value = 'Birth Certificate';
+            document.getElementById('nidOrBirthCert').value = s.documents.birthCertificate;
           }
 
           existingPhotoLink = s.photoLink;
@@ -599,10 +569,6 @@
 
           // Academic
           document.getElementById('educationalBackground').value = s.educationalBackground || '';
-          document.getElementById('courseName').value = s.admissionInfo?.courseName || '';
-          document.getElementById('batchNum').value = s.admissionInfo?.batchNum || '';
-          document.getElementById('courseStatus').value = s.admissionInfo?.courseStatus || 'Running';
-          document.getElementById('courseType').value = s.admissionInfo?.courseType || 'Paid';
           document.getElementById('skills').value = s.skillsAndLanguages?.skills || '';
           document.getElementById('languages').value = s.skillsAndLanguages?.languages || '';
 
@@ -663,13 +629,13 @@
         religion: document.getElementById('religion').value,
         maritalStatus: document.getElementById('maritalStatus').value,
         'spouseInfo.name': document.getElementById('spouseName').value,
-        nidOrBirthCert: `${idType}: ${idNum}`,
+        'spouseInfo.profession': document.getElementById('spouseProfession').value, // Save profession
+        
+        // Update documents object correctly
+        documents: idType === 'NID' ? { nid: idNum } : { birthCertificate: idNum },
+        
         photoLink: finalPhotoLink,
         educationalBackground: document.getElementById('educationalBackground').value,
-        'admissionInfo.courseName': document.getElementById('courseName').value,
-        'admissionInfo.batchNum': document.getElementById('batchNum').value,
-        'admissionInfo.courseStatus': document.getElementById('courseStatus').value,
-        'admissionInfo.courseType': document.getElementById('courseType').value,
         'skillsAndLanguages.skills': document.getElementById('skills').value,
         'skillsAndLanguages.languages': document.getElementById('languages').value,
         'careerProfile.careerGoal': selectedGoals,
@@ -690,18 +656,28 @@
         const data = await res.json();
         overlay.classList.remove('open');
         btn.disabled = false;
+        
         if (data.success) {
-          window.location.href = `/student-profile.html?id=${studentID}`;
+          Swal.fire({
+            icon: 'success',
+            title: 'আপডেট সফল!',
+            text: 'প্রোফাইলের তথ্য সেভ হয়েছে।',
+            timer: 1500,
+            showConfirmButton: false
+          }).then(() => {
+            window.location.href = `/student-profile.html?id=${studentID}`;
+          });
         } else {
-          alert('Update failed: ' + data.message);
+          Swal.fire('Error', 'Update failed: ' + data.message, 'error');
         }
       } catch (err) {
         overlay.classList.remove('open');
         btn.disabled = false;
-        alert('Server error. Please try again.');
+        Swal.fire('Error', 'Server error. Please try again.', 'error');
       }
     });
 
+    // Initialize
     loadData();
   </script>
 </body>

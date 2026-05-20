@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student Profile | Careerlift Admin</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- SweetAlert2 CDN for alerts -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -186,7 +188,7 @@
     }
     .status-badge-dot { width: 8px; height: 8px; border-radius: 50%; }
 
-    /* Contact Details inside Left Panel */
+    /* Contact Details */
     .quick-contacts {
       border-top: 1px solid var(--border);
       padding: 24px; text-align: left;
@@ -207,17 +209,18 @@
 
     .summary-actions { padding: 0 24px 24px; display: flex; flex-direction: column; gap: 10px; }
 
-    /* ── RIGHT COLUMN (DETAILS SECTIONS) ── */
+    /* ── RIGHT COLUMN ── */
     .details-stack { display: flex; flex-direction: column; gap: 24px; }
 
     .section-header {
       padding: 20px 24px;
       border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; gap: 10px;
+      display: flex; align-items: center; justify-content: space-between;
       background: #FAFAFC;
     }
-    .section-header svg { width: 18px; height: 18px; color: var(--text-secondary); }
-    .section-header h3 { font-size: 15px; font-weight: 700; color: var(--text); }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .header-left svg { width: 18px; height: 18px; color: var(--text-secondary); }
+    .header-left h3 { font-size: 15px; font-weight: 700; color: var(--text); }
 
     .section-body { padding: 24px; }
 
@@ -233,7 +236,6 @@
     .data-value-highlight { color: var(--primary-dark); font-weight: 700; }
     .data-value-hot { color: #DC2626; font-weight: 700; }
 
-    /* ── GOAL TAGS ── */
     .goal-tags { display: flex; flex-wrap: wrap; gap: 8px; }
     .goal-tag {
       display: inline-flex; align-items: center; gap: 6px;
@@ -244,16 +246,10 @@
     }
     .goal-tag svg { width: 12px; height: 12px; color: var(--primary); }
 
-    /* ── ADMIN NOTE ── */
     .admin-note {
-      background: #FFFBEB;
-      padding: 16px;
-      border-radius: var(--radius-sm);
-      border: 1px solid #FDE68A;
-      color: #92400E;
-      font-size: 14px;
-      line-height: 1.6;
-      font-weight: 500;
+      background: #FFFBEB; padding: 16px; border-radius: var(--radius-sm);
+      border: 1px solid #FDE68A; color: #92400E; font-size: 14px;
+      line-height: 1.6; font-weight: 500;
     }
 
     /* ── STATUS COLORS ── */
@@ -263,14 +259,14 @@
     .status-Suspended { background: #FEF2F2 !important; color: #991B1B !important; border: 1px solid #FECACA !important; }
     .status-Next      { background: #F5F3FF !important; color: #5B21B6 !important; border: 1px solid #DDD6FE !important; }
 
-    /* ── LOADING / ERROR ── */
+    /* Loading / Error */
     .profile-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 100px 20px; gap: 16px; text-align: center; }
     .profile-loading svg { width: 40px; height: 40px; color: var(--primary); animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .profile-loading-text { font-size: 15px; color: var(--text-secondary); font-weight: 500; }
     .profile-error { padding: 50px; text-align: center; color: #DC2626; font-size: 15px; font-weight: 600; background: #FEF2F2; border-radius: var(--radius); border: 1px solid #FECACA; }
 
-    /* ── MODAL ── */
+    /* ── MODALS ── */
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(15,23,42,.6); backdrop-filter: blur(4px);
       z-index: 200; display: none; align-items: center; justify-content: center;
@@ -278,25 +274,23 @@
     .modal-backdrop.open { display: flex; }
     .modal {
       background: var(--surface); border-radius: var(--radius);
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-      padding: 32px; max-width: 400px; width: 90%;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      padding: 32px; max-width: 450px; width: 90%;
       animation: modalIn .2s ease;
     }
     @keyframes modalIn { from { transform: scale(.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .modal h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
     .modal p  { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 24px; }
-    .modal-label { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 8px; display: block; }
+    .modal-label { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: block; }
     .modal-select {
       width: 100%; padding: 10px 14px;
       border: 1px solid var(--border); border-radius: var(--radius-sm);
       font-family: inherit; font-size: 14px; color: var(--text);
-      background: var(--bg); outline: none; margin-bottom: 24px;
-      transition: all .2s;
+      background: var(--bg); outline: none; margin-bottom: 20px; transition: all .2s;
     }
     .modal-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
-    .modal-actions { display: flex; gap: 12px; justify-content: flex-end; }
+    .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 10px; }
   </style>
-  <base target="_blank">
 <base target="_blank">
 <base target="_blank">
 </head>
@@ -340,7 +334,7 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <a href="/add-student" class="nav-add">
+      <a href="/add-student" class="nav-add" target="_blank">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add New Student
       </a>
@@ -382,11 +376,56 @@
     </div>
   </main>
 
-  <!-- STATUS UPDATE MODAL -->
+  <!-- ── MODALS ── -->
+
+  <!-- 1. Add New Course Modal -->
+  <div class="modal-backdrop" id="addCourseModal">
+    <div class="modal">
+      <h3>Add New Course</h3>
+      <p>Enroll this student into a new batch/course.</p>
+
+      <label class="modal-label">Course Name *</label>
+      <select id="newCourseName" class="modal-select">
+        <option value="">Select Course</option>
+        <option value="Primary Healthcare Service Level 2">Primary Healthcare Service Level 2</option>
+        <option value="Dementia Caregiving (Level 3)">Dementia Caregiving (Level 3)</option>
+        <option value="Dementia Caregiving (Level 2)">Dementia Caregiving (Level 2)</option>
+        <option value="Caregiving for Persons with Special Needs (Level-3)">Caregiving for Persons with Special Needs (Level-3)</option>
+        <option value="Caregiving for Persons with Special Needs (Level-2)">Caregiving for Persons with Special Needs (Level-2)</option>
+        <option value="English for Work (Level 2)">English for Work (Level 2)</option>
+        <option value="English for Work (Level 3)">English for Work (Level 3)</option>
+        <option value="Skin Care (Level 3)">Skin Care (Level 3)</option>
+        <option value="Skin Care (Level 2)">Skin Care (Level 2)</option>
+        <option value="Japanese Language (Level-2)">Japanese Language (Level-2)</option>
+        <option value="Japanese Language (Level-3)">Japanese Language (Level-3)</option>
+        <option value="Caregiving For Infant, Toddler and Children Level: 02">Caregiving For Infant, Toddler and Children Level: 02</option>
+        <option value="Caregiving For Elderly Persons Level: 02">Caregiving For Elderly Persons Level: 02</option>
+        <option value="Caregiving For Infant, Toddler and Children Level: 03">Caregiving For Infant, Toddler and Children Level: 03</option>
+        <option value="Caregiving For Elderly Persons Level: 03">Caregiving For Elderly Persons Level: 03</option>
+      </select>
+
+      <!-- Batch Number input changed to number type with auto-formatting -->
+      <label class="modal-label">Batch Number *</label>
+      <input type="number" id="newBatchNo" class="modal-select" placeholder="e.g. 1, 2, 3" min="1">
+
+      <label class="modal-label">Course Type *</label>
+      <select id="newCourseType" class="modal-select">
+        <option value="Paid">Paid</option>
+        <option value="Free">Free</option>
+      </select>
+
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeAddCourseModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitNewCourse()">Enroll Course</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Status Update Modal -->
   <div class="modal-backdrop" id="statusModal">
     <div class="modal">
-      <h3>Update Status</h3>
-      <p>Change the current enrollment status for this student.</p>
+      <h3>Update Course Status</h3>
+      <p>Change the current status for this specific course.</p>
       <label class="modal-label">Select New Status</label>
       <select id="newStatusSelect" class="modal-select">
         <option value="Running">Running</option>
@@ -396,14 +435,14 @@
         <option value="Next">Next Batch</option>
       </select>
       <div class="modal-actions">
-        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-outline" onclick="closeStatusModal()">Cancel</button>
         <button class="btn btn-primary" onclick="submitStatusUpdate()">Save Changes</button>
       </div>
     </div>
   </div>
 
   <script>
-    /* ── AUTH ── */
+    /* ── AUTH & INIT ── */
     const token = localStorage.getItem('adminToken');
     if (!token) window.location.href = '/index.html';
     document.getElementById('logoutBtn').addEventListener('click', () => {
@@ -413,80 +452,119 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const studentID = urlParams.get('id');
+    let studentMongoId = '';
 
-    // ✅ Error handling — no student ID provided
     if (!studentID) {
         document.getElementById('profileContent').innerHTML = `
             <div class="profile-error" style="text-align:center; padding:50px;">
                 <h2 style="color:#EF4444; margin-bottom:10px;">⚠️ No Student ID Provided</h2>
-                <p style="color:#64748B;">Please access this page from the student list.</p>
-                <a href="/all-students" style="color:#3B82F6; text-decoration:none; font-weight:600;">
-                    ← Back to All Students
-                </a>
+                <a href="/all-students" style="color:#3B82F6; text-decoration:none; font-weight:600;">← Back to All Students</a>
             </div>
         `;
         document.getElementById('studentIdTitle').innerHTML = 'Error';
         throw new Error('No student ID in URL');
     }
 
-    /* ── STATUS COLORS ── */
-    const statusColors = {
-      Running: '#3B82F6', Completed: '#10B981',
-      Dropped: '#F59E0B', Suspended: '#EF4444', Next: '#7C3AED'
-    };
-    const statusClasses = {
-      Running: 'status-Running', Completed: 'status-Completed',
-      Dropped: 'status-Dropped', Suspended: 'status-Suspended', Next: 'status-Next'
-    };
+    const statusColors = { Running: '#3B82F6', Completed: '#10B981', Dropped: '#F59E0B', Suspended: '#EF4444', Next: '#7C3AED' };
+    const statusClasses = { Running: 'status-Running', Completed: 'status-Completed', Dropped: 'status-Dropped', Suspended: 'status-Suspended', Next: 'status-Next' };
 
-    /* ── MODAL ── */
-    function openModal(currentStatus) {
+    /* ── ADD COURSE MODAL LOGIC ── */
+    function openAddCourseModal() {
+      document.getElementById('addCourseModal').classList.add('open');
+    }
+    function closeAddCourseModal() {
+      document.getElementById('addCourseModal').classList.remove('open');
+      document.getElementById('newCourseName').value = '';
+      document.getElementById('newBatchNo').value = '';
+      document.getElementById('newCourseType').value = 'Paid';
+    }
+
+    async function submitNewCourse() {
+      const courseName = document.getElementById('newCourseName').value;
+      const rawBatch = document.getElementById('newBatchNo').value;
+      const courseType = document.getElementById('newCourseType').value;
+
+      if(!courseName || !rawBatch) {
+        Swal.fire('Warning', 'Please fill Course Name and Batch Number.', 'warning');
+        return;
+      }
+
+      // Auto-format batch number (1 → Batch-01)
+      const batchNo = `Batch-${String(rawBatch).padStart(2, '0')}`;
+
+      try {
+        const res = await fetch(`/api/students/${studentMongoId}/enroll`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ courseName, batchNo, courseType, status: 'Running' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeAddCourseModal();
+          Swal.fire('Success', 'নতুন কোর্সে সফলভাবে এনরোল করানো হয়েছে!', 'success');
+          loadStudentProfile();
+        } else {
+          Swal.fire('Error', data.message, 'error');
+        }
+      } catch (err) {
+        Swal.fire('Error', 'Server Connection Error!', 'error');
+      }
+    }
+
+    /* ── STATUS UPDATE MODAL LOGIC ── */
+    let currentEnrollmentIdToUpdate = null;
+
+    function openStatusModal(enrollmentId, currentStatus) {
+      currentEnrollmentIdToUpdate = enrollmentId;
       document.getElementById('newStatusSelect').value = currentStatus;
       document.getElementById('statusModal').classList.add('open');
     }
-    function closeModal() {
+    function closeStatusModal() {
       document.getElementById('statusModal').classList.remove('open');
-    }
-    document.getElementById('statusModal').addEventListener('click', e => {
-      if (e.target === e.currentTarget) closeModal();
-    });
-
-    function goToEditPage() {
-      window.location.href = `/edit-student?id=${studentID}`;
+      currentEnrollmentIdToUpdate = null;
     }
 
     async function submitStatusUpdate() {
+      if(!currentEnrollmentIdToUpdate) return;
+
       const newStatus = document.getElementById('newStatusSelect').value;
       try {
-        const res = await fetch(`/api/students/${studentID}/status`, {
+        const res = await fetch(`/api/students/${studentMongoId}/enrollments/${currentEnrollmentIdToUpdate}/status`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ status: newStatus })
         });
         const data = await res.json();
         if (data.success) {
-          closeModal();
+          closeStatusModal();
+          Swal.fire({ title: 'Updated!', icon: 'success', timer: 1200, showConfirmButton: false });
           loadStudentProfile();
-        } else { alert("Update failed: " + data.message); }
-      } catch (err) { alert("Server connection error!"); }
+        } else {
+          Swal.fire('Error', data.message, 'error');
+        }
+      } catch (err) { Swal.fire('Error', 'Server Connection Error!', 'error'); }
     }
 
-    async function loadStudentProfile() {
-      if (!studentID) {
-        document.getElementById('profileContent').innerHTML = `<div class="profile-error">No student ID provided in URL!</div>`;
-        return;
-      }
+    // Close modals on outside click
+    document.querySelectorAll('.modal-backdrop').forEach(modal => {
+      modal.addEventListener('click', e => { if (e.target === e.currentTarget) { closeAddCourseModal(); closeStatusModal(); }});
+    });
 
+    function goToEditPage() {
+      window.location.href = `/edit-student.html?id=${studentID}`;
+    }
+
+    /* ── LOAD DATA ── */
+    async function loadStudentProfile() {
       try {
         const res = await fetch(`/api/students/${studentID}`, { headers: { 'Authorization': `Bearer ${token}` } });
         const result = await res.json();
 
         if (result.success) {
           const s = result.data;
-          document.getElementById('studentIdTitle').innerHTML = `
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            ID: ${s.studentID}
-          `;
+          studentMongoId = s._id;
+
+          document.getElementById('studentIdTitle').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ID: ${s.studentID}`;
           document.getElementById('editProfileBtn').style.display = 'inline-flex';
 
           const goals = s.careerProfile?.careerGoal || [];
@@ -503,13 +581,40 @@
               </div>`;
           }
 
-          const status = s.admissionInfo?.courseStatus || 'N/A';
-          const statusColor = statusColors[status] || '#94A3B8';
-          const statusClass = statusClasses[status] || '';
+          let govIdText = '—';
+          if (s.documents?.nid) govIdText = `NID: ${s.documents.nid}`;
+          else if (s.documents?.birthCertificate) govIdText = `Birth Cert: ${s.documents.birthCertificate}`;
+
+          const enrollmentsHtml = s.enrollments && s.enrollments.length > 0
+            ? s.enrollments.map(e => {
+                const eStatusColor = statusColors[e.status] || '#94A3B8';
+                const eStatusClass = statusClasses[e.status] || '';
+                const dateStr = new Date(e.enrollmentDate).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
+
+                return `
+                <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 16px; background: var(--bg);">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                    <div>
+                      <h4 style="font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px;">${e.courseName}</h4>
+                      <div style="font-size: 12px; color: var(--text-secondary);">Batch: <strong>${e.batchNo}</strong> &nbsp;•&nbsp; Type: <strong>${e.courseType}</strong> &nbsp;•&nbsp; Enrolled: ${dateStr}</div>
+                    </div>
+                    <span class="status-badge ${eStatusClass}" style="font-size: 11px; padding: 4px 10px;">
+                      <span class="status-badge-dot" style="background:${eStatusColor}"></span>${e.status}
+                    </span>
+                  </div>
+                  <button class="btn btn-outline" style="font-size: 11px; padding: 6px 12px; height: auto;" onclick="openStatusModal('${e._id}', '${e.status}')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg> Change Status
+                  </button>
+                </div>`;
+              }).join('')
+            : '<div style="text-align:center; padding: 20px; color: var(--text-muted);">No courses enrolled yet.</div>';
+
+          const latestStatus = s.enrollments && s.enrollments.length > 0 ? s.enrollments[s.enrollments.length - 1].status : 'N/A';
+          const lStatusColor = statusColors[latestStatus] || '#94A3B8';
+          const lStatusClass = statusClasses[latestStatus] || '';
 
           document.getElementById('profileContent').innerHTML = `
             <div class="profile-layout">
-
               <!-- LEFT COLUMN: SUMMARY & CONTACT -->
               <div class="panel-card">
                 <div class="user-summary">
@@ -519,16 +624,17 @@
                   </div>
                   <h1 class="user-name">${s.fullName}</h1>
                   <p class="user-edu">${s.educationalBackground || 'Educational background not provided'}</p>
-                  <span class="status-badge ${statusClass}">
-                    <span class="status-badge-dot" style="background:${statusColor}"></span>
-                    ${status} Status
+                  <span class="status-badge ${lStatusClass}">
+                    <span class="status-badge-dot" style="background:${lStatusColor}"></span>
+                    Latest: ${latestStatus}
                   </span>
                 </div>
 
                 <div class="summary-actions">
-                   <button class="btn btn-outline" style="width: 100%;" onclick="openModal('${status}')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
-                    Update Course Status
+                   <!-- NEW ENROLL BUTTON -->
+                   <button class="btn btn-primary" style="width: 100%;" onclick="openAddCourseModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                    Add New Course
                   </button>
                 </div>
 
@@ -560,45 +666,26 @@
               <!-- RIGHT COLUMN: DETAILED INFO -->
               <div class="details-stack">
 
-                <!-- Card 1: Academic & Admission -->
+                <!-- Card 1: Enrolled Courses List -->
                 <div class="panel-card">
                   <div class="section-header">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                    <h3>Academic & Admission Summary</h3>
+                    <div class="header-left">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                      <h3>Enrolled Courses</h3>
+                    </div>
                   </div>
-                  <div class="section-body data-grid">
-                    <div class="data-item">
-                      <span class="data-label">Course Name</span>
-                      <span class="data-value data-value-highlight">${s.admissionInfo?.courseName || 'N/A'}</span>
-                    </div>
-                    <div class="data-item">
-                      <span class="data-label">Batch & Type</span>
-                      <span class="data-value">${s.admissionInfo?.batchNum || 'N/A'} (${s.admissionInfo?.courseType || 'N/A'})</span>
-                    </div>
-                    <div class="data-item">
-                      <span class="data-label">Highest Education</span>
-                      <span class="data-value">${s.educationalBackground || 'N/A'}</span>
-                    </div>
-                    <div class="data-item">
-                      <span class="data-label">Skills</span>
-                      <span class="data-value">${s.skillsAndLanguages?.skills || 'N/A'}</span>
-                    </div>
-                    <div class="data-item">
-                      <span class="data-label">Languages</span>
-                      <span class="data-value">${s.skillsAndLanguages?.languages || 'N/A'}</span>
-                    </div>
-                    <div class="data-item">
-                      <span class="data-label">Admission Date</span>
-                      <span class="data-value">${s.admissionInfo?.admissionDate ? new Date(s.admissionInfo.admissionDate).toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'}) : '—'}</span>
-                    </div>
+                  <div class="section-body" style="padding: 24px;">
+                    ${enrollmentsHtml}
                   </div>
                 </div>
 
                 <!-- Card 2: Career & Visa -->
                 <div class="panel-card">
                   <div class="section-header">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                    <h3>Career & Visa Assessment</h3>
+                    <div class="header-left">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                      <h3>Career & Visa Assessment</h3>
+                    </div>
                   </div>
                   <div class="section-body data-grid">
                     <div class="data-item" style="grid-column: 1 / -1;">
@@ -639,8 +726,10 @@
                 <!-- Card 3: Personal & Family -->
                 <div class="panel-card">
                   <div class="section-header">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9.5" cy="11.5" r="1.5"/><circle cx="14.5" cy="11.5" r="1.5"/><path d="M7 16h10"/></svg>
-                    <h3>Personal & Family Details</h3>
+                    <div class="header-left">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9.5" cy="11.5" r="1.5"/><circle cx="14.5" cy="11.5" r="1.5"/><path d="M7 16h10"/></svg>
+                      <h3>Personal & Family Details</h3>
+                    </div>
                   </div>
                   <div class="section-body data-grid">
                     <div class="data-item">
@@ -666,7 +755,7 @@
                     ${spouseHtml}
                     <div class="data-item" style="grid-column: 1 / -1;">
                       <span class="data-label">Govt ID (NID/Birth Cert)</span>
-                      <div><span class="data-value-mono">${s.nidOrBirthCert || '—'}</span></div>
+                      <div><span class="data-value-mono">${govIdText}</span></div>
                     </div>
                     <div class="data-item" style="grid-column: 1 / -1;">
                       <span class="data-label">Full Permanent Address</span>
@@ -678,8 +767,10 @@
                 <!-- Card 4: Family Info -->
                 <div class="panel-card">
                   <div class="section-header">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                    <h3>Family Information</h3>
+                    <div class="header-left">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                      <h3>Family Information</h3>
+                    </div>
                   </div>
                   <div class="section-body data-grid">
                     <div class="data-item">
@@ -700,8 +791,10 @@
                 <!-- Card 5: Admin Note -->
                 <div class="panel-card">
                   <div class="section-header">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                    <h3>Admin Follow-up Note</h3>
+                    <div class="header-left">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                      <h3>Admin Follow-up Note</h3>
+                    </div>
                   </div>
                   <div class="section-body">
                     <div class="admin-note">

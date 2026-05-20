@@ -1,18 +1,58 @@
 const Student = require('../models/Student');
+// Export মডিউলগুলো টপে কল করা ভালো প্র্যাকটিস
+const { generateStudentExcel } = require('../utils/excelExport'); 
 
 // @desc    নতুন স্টুডেন্ট যুক্ত করা (Add Student)
 // @route   POST /api/students
 exports.addStudent = async (req, res) => {
     try {
-        const studentData = req.body;
+        const { phone, email } = req.body.contact || req.body;
 
-        // অটোমেটিক Unique Student ID তৈরি করা (যেমন: CL-26-001)
+        const duplicateQuery = { $or: [] };
+        if (phone) duplicateQuery.$or.push({ 'contact.phone': phone });
+        if (email) duplicateQuery.$or.push({ 'contact.email': email });
+
+        if (duplicateQuery.$or.length > 0) {
+            const existingStudent = await Student.findOne(duplicateQuery);
+            if (existingStudent) {
+                return res.status(409).json({
+                    success: false,
+                    message: 'এই ফোন নম্বর বা ইমেইল দিয়ে আগে থেকেই একটি প্রোফাইল আছে! দয়া করে নতুন কোর্স অ্যাড করতে তার প্রোফাইল আপডেট করুন।',
+                    studentId: existingStudent._id,
+                    studentID: existingStudent.studentID
+                });
+            }
+        }
+
         const count = await Student.countDocuments();
         const nextIdNum = (count + 1).toString().padStart(3, '0');
         const currentYear = new Date().getFullYear().toString().slice(-2);
         const studentID = `CL-${currentYear}-${nextIdNum}`;
 
-        studentData.studentID = studentID;
+        const studentData = {
+            studentID,
+            fullName: req.body.fullName,
+            dob: req.body.dob,
+            gender: req.body.gender,
+            bloodGroup: req.body.bloodGroup,
+            religion: req.body.religion,
+            maritalStatus: req.body.maritalStatus,
+            spouseInfo: req.body.spouseInfo,
+            documents: req.body.documents || {},
+            photoLink: req.body.photoLink,
+            contact: req.body.contact,
+            parentsInfo: req.body.parentsInfo,
+            educationalBackground: req.body.educationalBackground,
+            enrollments: req.body.enrollments || [{
+                courseName: req.body.courseName,
+                batchNo: req.body.batchNo,
+                courseType: req.body.courseType || 'Paid',
+                status: req.body.courseStatus || 'Running'
+            }],
+            skillsAndLanguages: req.body.skillsAndLanguages,
+            careerProfile: req.body.careerProfile,
+            comment: req.body.comment
+        };
 
         const student = new Student(studentData);
         await student.save();
@@ -24,39 +64,110 @@ exports.addStudent = async (req, res) => {
         });
     } catch (error) {
         if (error.code === 11000) {
-            return res.status(400).json({ success: false, message: 'এই আইডি দিয়ে ইতোমধ্যে শিক্ষার্থী যুক্ত করা আছে।' });
+            const field = Object.keys(error.keyValue)[0];
+            return res.status(409).json({ 
+                success: false, 
+                message: `এই ${field} দিয়ে ইতোমধ্যে শিক্ষার্থী যুক্ত করা আছে।` 
+            });
         }
         res.status(500).json({ success: false, message: 'সার্ভার এরর: ' + error.message });
     }
 };
 
-// @desc    সকল স্টুডেন্ট বা ফিল্টার করা স্টুডেন্ট লিস্ট আনা (Get Students with Search & Filter)
+// @desc    নতুন কোর্সে এনরোল করা (Add Course to Existing Student)
+// @route   POST /api/students/:id/enroll
+exports.enrollInNewCourse = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { courseName, batchNo, courseType, status } = req.body;
+
+        const updateQuery = {
+            $push: {
+                enrollments: {
+                    courseName,
+                    batchNo,
+                    courseType: courseType || 'Paid',
+                    status: status || 'Running',
+                    enrollmentDate: new Date()
+                }
+            }
+        };
+
+        const updatedStudent = await Student.findByIdAndUpdate(
+            id,
+            updateQuery,
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedStudent) {
+            return res.status(404).json({ success: false, message: 'শিক্ষার্থী খুঁজে পাওয়া যায়নি!' });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'নতুন কোর্স সফলভাবে যুক্ত হয়েছে!',
+            data: updatedStudent
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'এনরোলমেন্ট এরর: ' + error.message });
+    }
+};
+
+// @desc    ডকুমেন্ট আপডেট করা
+// @route   PATCH /api/students/:id/documents
+exports.updateDocuments = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nid, birthCertificate } = req.body;
+
+        const updateQuery = { $set: {} };
+        if (nid !== undefined) updateQuery.$set['documents.nid'] = nid;
+        if (birthCertificate !== undefined) updateQuery.$set['documents.birthCertificate'] = birthCertificate;
+
+        const updatedStudent = await Student.findByIdAndUpdate(
+            id,
+            updateQuery,
+            { new: true }
+        );
+
+        if (!updatedStudent) {
+            return res.status(404).json({ success: false, message: 'শিক্ষার্থী খুঁজে পাওয়া যায়নি!' });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'ডকুমেন্ট সফলভাবে আপডেট হয়েছে!',
+            data: updatedStudent
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'ডকুমেন্ট আপডেট এরর: ' + error.message });
+    }
+};
+
+// @desc    সকল স্টুডেন্ট লিস্ট
 // @route   GET /api/students
 exports.getStudents = async (req, res) => {
     try {
-        const { search, status, goal, courseName } = req.query; // courseName যুক্ত করা হয়েছে
+        const { search, status, goal, courseName, batch } = req.query;  // FIX 3: batch parameter added
         let query = {};
 
-        // ১. পেজ বা স্ট্যাটাস অনুযায়ী ফিল্টার (Running, Completed/Alumni, Dropped, Next)
         if (status) {
-            if (status === 'Alumni') {
-                query['admissionInfo.courseStatus'] = 'Completed';
-            } else {
-                query['admissionInfo.courseStatus'] = status;
-            }
+            query['enrollments.status'] = status === 'Alumni' ? 'Completed' : status;
         }
 
-        // ২. ক্যারিয়ার গোল অনুযায়ী ফিল্টার (Study Abroad, Govt Job ইত্যাদি)
         if (goal) {
             query['careerProfile.careerGoal'] = goal;
         }
 
-        // ৩. কোর্স নাম অনুযায়ী ফিল্টার
         if (courseName) {
-            query['admissionInfo.courseName'] = courseName;
+            query['enrollments.courseName'] = { $regex: courseName, $options: 'i' };
         }
 
-        // ৪. লাইভ সার্চ (নাম, ফোন নাম্বার বা স্টুডেন্ট আইডি দিয়ে খোঁজা)
+        // FIX 3: Batch filter logic
+        if (batch) {
+            query['enrollments.batchNo'] = batch;
+        }
+
         if (search) {
             query['$or'] = [
                 { fullName: { $regex: search, $options: 'i' } },
@@ -65,7 +176,6 @@ exports.getStudents = async (req, res) => {
             ];
         }
 
-        // ডাটাবেস থেকে কুয়েরি অনুযায়ী ডাটা আনা (সর্টিং: নতুন ভর্তি হওয়া স্টুডেন্ট লিস্টের ওপরে থাকবে)
         const students = await Student.find(query).sort({ createdAt: -1 });
 
         res.status(200).json({
@@ -78,7 +188,7 @@ exports.getStudents = async (req, res) => {
     }
 };
 
-// @desc    নির্দিষ্ট একজন শিক্ষার্থীর সম্পূর্ণ প্রোফাইল আনা (Get Single Student Profile)
+// @desc    নির্দিষ্ট শিক্ষার্থীর প্রোফাইল
 // @route   GET /api/students/:studentID
 exports.getStudentById = async (req, res) => {
     try {
@@ -97,14 +207,12 @@ exports.getStudentById = async (req, res) => {
     }
 };
 
-// @desc    শিক্ষার্থীর সব তথ্য আপডেট করা (Full CRUD Update)
+// @desc    শিক্ষার্থীর তথ্য আপডেট
 // @route   PUT /api/students/:id
 exports.updateStudent = async (req, res) => {
     try {
-        // আইডি বাদে বডির সব ডাটা দিয়ে আপডেট করা
         const updatedData = req.body;
 
-        // যেহেতু রাউটে :id ব্যবহার করা হবে, তাই req.params.id দিয়ে খোঁজা হচ্ছে
         const student = await Student.findOneAndUpdate(
             { studentID: req.params.id },
             { $set: updatedData },
@@ -126,7 +234,7 @@ exports.updateStudent = async (req, res) => {
     }
 };
 
-// @desc    শিক্ষার্থীর ডাটা মুছে ফেলা (Delete Student)
+// @desc    শিক্ষার্থী মুছে ফেলা
 // @route   DELETE /api/students/:studentID
 exports.deleteStudent = async (req, res) => {
     try {
@@ -145,27 +253,26 @@ exports.deleteStudent = async (req, res) => {
     }
 };
 
-// @desc    শিক্ষার্থীর কোর্স স্ট্যাটাস আপডেট করা
-// @route   PATCH /api/students/:id/status
-exports.updateStudentStatus = async (req, res) => {
+// @desc    কোর্স স্ট্যাটাস আপডেট
+// @route   PATCH /api/students/:id/enrollments/:enrollmentId/status
+exports.updateEnrollmentStatus = async (req, res) => {
     try {
+        const { id, enrollmentId } = req.params;
         const { status } = req.body;
 
-        // স্ট্যাটাস ভ্যালিডেশন
         const validStatuses = ['Running', 'Completed', 'Dropped', 'Suspended', 'Next'];
         if (!validStatuses.includes(status)) {
             return res.status(400).json({ success: false, message: 'অবৈধ স্ট্যাটাস!' });
         }
 
-        // ডাটাবেসে স্ট্যাটাস আপডেট করা
         const updatedStudent = await Student.findOneAndUpdate(
-            { studentID: req.params.id },
-            { $set: { 'admissionInfo.courseStatus': status } },
+            { _id: id, 'enrollments._id': enrollmentId },
+            { $set: { 'enrollments.$.status': status } },
             { new: true }
         );
 
         if (!updatedStudent) {
-            return res.status(404).json({ success: false, message: 'শিক্ষার্থী খুঁজে পাওয়া যায়নি!' });
+            return res.status(404).json({ success: false, message: 'শিক্ষার্থী বা এনরোলমেন্ট খুঁজে পাওয়া যায়নি!' });
         }
 
         res.status(200).json({ 
@@ -179,18 +286,18 @@ exports.updateStudentStatus = async (req, res) => {
     }
 };
 
-// @desc    শিক্ষার্থীদের ডাটা এক্সেল ফাইল হিসেবে ডাউনলোড করা
+// @desc    এক্সেল এক্সপোর্ট
 // @route   GET /api/students/export
 exports.exportStudentsExcel = async (req, res) => {
     try {
-        const { search, status, goal, courseName } = req.query;
-        const { generateStudentExcel } = require('../utils/excelExport');
+        const { search, status, goal, courseName, batch } = req.query;  // FIX 3: batch parameter added
 
-        // ফিল্টার কুয়েরি তৈরি (GET /api/students এর মতো হুবহু)
         let query = {};
-        if (status) query['admissionInfo.courseStatus'] = status;
+        if (status) query['enrollments.status'] = status === 'Alumni' ? 'Completed' : status;
         if (goal) query['careerProfile.careerGoal'] = goal;
-        if (courseName) query['admissionInfo.courseName'] = courseName;
+        if (courseName) query['enrollments.courseName'] = courseName;
+        // FIX 3: Batch filter for export
+        if (batch) query['enrollments.batchNo'] = batch;
         if (search) {
             query['$or'] = [
                 { fullName: { $regex: search, $options: 'i' } },
@@ -200,14 +307,10 @@ exports.exportStudentsExcel = async (req, res) => {
         }
 
         const students = await Student.find(query).sort({ createdAt: -1 });
-
-        // এক্সেল বাফার তৈরি
         const buffer = await generateStudentExcel(students);
 
-        // রেসপন্স হেডার সেট করে ফাইল পাঠানো
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename=Careerlift_Students_${Date.now()}.xlsx`);
-
         res.status(200).send(buffer);
 
     } catch (error) {
@@ -216,13 +319,12 @@ exports.exportStudentsExcel = async (req, res) => {
     }
 };
 
-// @desc    Get public alumni data for LMS website
+// @desc    পাবলিক অ্যালামনাই ডেটা
 // @route   GET /api/students/public-alumni
-// @access  Public (No token required)
 exports.getPublicAlumni = async (req, res) => {
     try {
-        const alumni = await Student.find({ 'admissionInfo.courseStatus': 'Completed' })
-            .select('fullName photoLink admissionInfo.courseName admissionInfo.batchNum admissionInfo.courseStatus -_id')
+        const alumni = await Student.find({ 'enrollments.status': 'Completed' })
+            .select('fullName photoLink enrollments.courseName enrollments.batchNo -_id')
             .sort({ createdAt: -1 });
 
         res.status(200).json({

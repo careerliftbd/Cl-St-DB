@@ -205,11 +205,17 @@
 
     /* ── STUDENT CELL ── */
     .student-cell { display: flex; align-items: center; gap: 10px; }
-    .student-avatar {
-      width: 36px; height: 36px; border-radius: 50%;
-      object-fit: cover; border: 2px solid var(--border);
-      background: var(--border-light); flex-shrink: 0;
+
+    /* ── UPDATED: BIGGER TABLE AVATAR ── */
+    .table-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
     }
+
     .student-name { font-weight: 600; color: var(--text); font-size: 13px; }
     .student-edu  { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
 
@@ -286,7 +292,7 @@
       animation: shimmer 1.5s infinite;
     }
     @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-    .sk-avatar { width: 36px; height: 36px; border-radius: 50%; }
+    .sk-avatar { width: 48px; height: 48px; border-radius: 8px; }
     .sk-text   { height: 12px; border-radius: 4px; }
     .sk-badge  { height: 20px; width: 72px; border-radius: 20px; }
 
@@ -392,7 +398,7 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <a href="/add-student" class="nav-add">
+      <a href="/add-student" class="nav-add" target="_blank">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add New Student
       </a>
@@ -468,6 +474,11 @@
             <option value="Caregiving For Elderly Persons Level: 03">Caregiving For Elderly Persons Level: 03</option>
           </select>
 
+          <!-- Batch Filter Dropdown -->
+          <select id="batchFilter" class="filter-select">
+            <option value="">All Batches</option>
+          </select>
+
           <!-- Clear filters -->
           <button id="clearFiltersBtn" onclick="clearFilters()" style="padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text-muted);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;display:none;transition:all .15s;">
             ✕ Clear
@@ -488,7 +499,7 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th style="width:44px;"></th>
+              <th style="width:60px;"></th>
               <th>Student ID</th>
               <th>Student</th>
               <th>Contact</th>
@@ -555,14 +566,42 @@
       Dropped: '#F59E0B', Suspended: '#EF4444', Next: '#7C3AED'
     };
 
+    /* ── GENERATE BATCH FILTER OPTIONS ── */
+    function generateBatchOptions() {
+      const batchSelect = document.getElementById('batchFilter');
+      batchSelect.innerHTML = '<option value="">All Batches</option>';
+      for (let i = 1; i <= 50; i++) {
+        const batchStr = `Batch-${String(i).padStart(2, '0')}`;
+        const option = document.createElement('option');
+        option.value = batchStr;
+        option.text = `Batch ${i}`;
+        batchSelect.appendChild(option);
+      }
+    }
+    generateBatchOptions();
+
+    /* ── GENDER-BASED AVATAR FUNCTION ── */
+    function getAvatarImage(photoLink, gender) {
+      if (photoLink && photoLink.trim() !== '') {
+        return `<img src="${photoLink}" class="table-avatar" alt="Student">`;
+      }
+
+      let iconUrl = '';
+      if (gender === 'Male') {
+        iconUrl = 'https://cdn-icons-png.flaticon.com/512/4140/4140048.png';
+      } else if (gender === 'Female') {
+        iconUrl = 'https://cdn-icons-png.flaticon.com/512/4140/4140047.png';
+      } else {
+        iconUrl = 'https://cdn-icons-png.flaticon.com/512/4140/4140051.png';
+      }
+
+      return `<img src="${iconUrl}" class="table-avatar" alt="${gender || 'Student'}">`;
+    }
+
     /* ── HELPERS ── */
     function statusBadgeHtml(status) {
       const dot = statusDotColors[status] || '#94A3B8';
       return `<span class="badge status-${status}"><span class="badge-dot" style="background:${dot}"></span>${status || 'N/A'}</span>`;
-    }
-    function avatarFallback(name) {
-      const initials = (name || '?').split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase();
-      return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Crect width='36' height='36' fill='%23EFF6FF'/%3E%3Ctext x='18' y='24' font-size='13' font-weight='700' text-anchor='middle' fill='%232563EB' font-family='sans-serif'%3E${encodeURIComponent(initials)}%3C/text%3E%3C/svg%3E`;
     }
 
     /* ── FILTER / SEARCH ── */
@@ -571,19 +610,26 @@
       const status = document.getElementById('statusFilter').value;
       const goal   = document.getElementById('goalFilter').value;
       const courseName = document.getElementById('courseFilter').value;
+      const batch = document.getElementById('batchFilter').value;
 
       filtered = allStudents.filter(s => {
         const matchSearch = !search ||
           (s.fullName || '').toLowerCase().includes(search) ||
           (s.studentID || '').toLowerCase().includes(search) ||
           (s.contact?.phone || '').includes(search);
-        const matchStatus = !status || s.admissionInfo?.courseStatus === status;
+
+        const enrollments = s.enrollments || [];
+        const matchStatus = !status || enrollments.some(e => e.status === status);
+
         const matchGoal   = !goal   || (s.careerProfile?.careerGoal || []).includes(goal);
-        const matchCourse = !courseName || s.admissionInfo?.courseName === courseName;
-        return matchSearch && matchStatus && matchGoal && matchCourse;
+
+        const matchCourse = !courseName || enrollments.some(e => e.courseName === courseName);
+        const matchBatch = !batch || enrollments.some(e => e.batchNo === batch);
+
+        return matchSearch && matchStatus && matchGoal && matchCourse && matchBatch;
       });
 
-      const hasFilters = search || status || goal || courseName;
+      const hasFilters = search || status || goal || courseName || batch;
       document.getElementById('clearFiltersBtn').style.display = hasFilters ? 'block' : 'none';
 
       currentPage = 1;
@@ -595,6 +641,7 @@
       document.getElementById('statusFilter').value   = '';
       document.getElementById('goalFilter').value     = '';
       document.getElementById('courseFilter').value  = '';
+      document.getElementById('batchFilter').value   = '';
       document.getElementById('clearFiltersBtn').style.display = 'none';
       applyFilters();
     }
@@ -607,7 +654,6 @@
       const start = (currentPage - 1) * PAGE_SIZE;
       const slice = filtered.slice(start, start + PAGE_SIZE);
 
-      // Result count
       document.getElementById('resultCount').innerHTML = `<strong>${total}</strong> student${total !== 1 ? 's' : ''}`;
       document.getElementById('topbarSub').textContent = `${allStudents.length} total · ${total} shown`;
 
@@ -627,16 +673,14 @@
       tbody.innerHTML = slice.map(s => {
         const goals = (s.careerProfile?.careerGoal || []).slice(0, 3);
         const goalTags = goals.map(g => `<span class="goal-tag">${g}</span>`).join('');
-        const fallback = avatarFallback(s.fullName);
+
+        const enrollments = s.enrollments || [];
+        const latestEnrollment = enrollments[enrollments.length - 1] || {};
+
         return `
           <tr onclick="viewProfile('${s.studentID}')">
             <td>
-              <img
-                src="${s.photoLink || ''}"
-                class="student-avatar"
-                alt="${s.fullName}"
-                onerror="this.src='${fallback}'"
-              >
+              ${getAvatarImage(s.photoLink, s.gender)}
             </td>
             <td><span class="student-id">${s.studentID}</span></td>
             <td>
@@ -648,11 +692,11 @@
               <div class="contact-batch">${s.contact?.email || ''}</div>
             </td>
             <td>
-              <div style="font-weight:500;color:var(--text);font-size:13px;">${s.admissionInfo?.courseName || '—'}</div>
-              <div style="font-size:11px;color:var(--text-muted);margin-top:1px;">Batch ${s.admissionInfo?.batchNum || '—'}</div>
+              <div style="font-weight:500;color:var(--text);font-size:13px;">${latestEnrollment.courseName || '—'}</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:1px;">${latestEnrollment.batchNo || '—'}</div>
             </td>
             <td><div class="goal-tags">${goalTags || '<span style="color:var(--text-muted);font-size:11px;">—</span>'}</div></td>
-            <td>${statusBadgeHtml(s.admissionInfo?.courseStatus)}</td>
+            <td>${statusBadgeHtml(latestEnrollment.status)}</td>
             <td onclick="event.stopPropagation()">
               <div class="row-actions">
                 <button class="action-btn btn-view" onclick="viewProfile('${s.studentID}')">
@@ -687,7 +731,6 @@
       btnContainer.innerHTML = '';
       btnContainer.appendChild(makeBtn('←', currentPage - 1, currentPage === 1));
 
-      // Smart page windows
       let pageNums = [];
       if (pages <= 7) {
         pageNums = Array.from({ length: pages }, (_, i) => i + 1);
@@ -719,8 +762,9 @@
         const status = document.getElementById('statusFilter').value;
         const goal   = document.getElementById('goalFilter').value;
         const courseName = document.getElementById('courseFilter').value;
+        const batch = document.getElementById('batchFilter').value;
 
-        let query = `?search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}&goal=${encodeURIComponent(goal)}&courseName=${encodeURIComponent(courseName)}`;
+        let query = `?search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}&goal=${encodeURIComponent(goal)}&courseName=${encodeURIComponent(courseName)}&batch=${encodeURIComponent(batch)}`;
 
         const res    = await fetch(`/api/students${query}`, { headers: { 'Authorization': `Bearer ${token}` } });
         const result = await res.json();
@@ -791,9 +835,10 @@
       const status = document.getElementById('statusFilter').value;
       const goal   = document.getElementById('goalFilter').value;
       const courseName = document.getElementById('courseFilter').value;
+      const batch = document.getElementById('batchFilter').value;
 
       try {
-        const res = await fetch(`/api/students/export?search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}&goal=${encodeURIComponent(goal)}&courseName=${encodeURIComponent(courseName)}`, {
+        const res = await fetch(`/api/students/export?search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}&goal=${encodeURIComponent(goal)}&courseName=${encodeURIComponent(courseName)}&batch=${encodeURIComponent(batch)}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -821,6 +866,7 @@
     document.getElementById('statusFilter').addEventListener('change', loadStudents);
     document.getElementById('goalFilter').addEventListener('change', loadStudents);
     document.getElementById('courseFilter').addEventListener('change', loadStudents);
+    document.getElementById('batchFilter').addEventListener('change', loadStudents);
 
     /* ── INIT ── */
     loadStudents();

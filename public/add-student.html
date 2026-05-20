@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Add Student | Careerlift Admin</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- SweetAlert2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -222,6 +224,7 @@
     .id-row input { flex: 3; }
   </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
 
@@ -263,7 +266,7 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <a href="add-student.html" class="nav-add">
+      <a href="add-student.html" class="nav-add" target="_blank">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add New Student
       </a>
@@ -351,7 +354,7 @@
                   <option value="NID">NID</option>
                   <option value="Birth Certificate">Birth Certificate</option>
                 </select>
-                <input type="text" id="nidOrBirthCert" required placeholder="Enter ID / Certificate Number">
+                <input type="text" id="idNumber" required placeholder="Enter ID / Certificate Number">
               </div>
             </div>
             <div class="form-group full-width">
@@ -417,9 +420,10 @@
               <label>Course Name *</label>
               <input type="text" id="courseName" required placeholder="Caregiving / Web Development">
             </div>
+            <!-- Batch Number input type changed to number with auto-formatting -->
             <div class="form-group">
               <label>Batch Number *</label>
-              <input type="text" id="batchNum" required placeholder="Batch-01">
+              <input type="number" id="batchNum" required placeholder="e.g. 1, 2, 3" min="1">
             </div>
             <div class="form-group">
               <label>Course Status *</label>
@@ -574,7 +578,11 @@
       const selectedGoals = [];
       document.querySelectorAll('input[name="goal"]:checked').forEach(cb => selectedGoals.push(cb.value));
       if (selectedGoals.length === 0) {
-        alert("অনুগ্রহ করে অন্তত একটি Career Goal সিলেক্ট করুন।");
+        Swal.fire({
+          icon: 'warning',
+          title: 'ক্যারিয়ার গোল সিলেক্ট করুন',
+          text: 'অনুগ্রহ করে অন্তত একটি Career Goal সিলেক্ট করুন।'
+        });
         return;
       }
 
@@ -594,14 +602,22 @@
         const driveData = await driveRes.json();
 
         if (!driveData.success) {
-          alert("ছবি আপলোডে সমস্যা: " + driveData.message);
+          Swal.fire({
+            icon: 'error',
+            title: 'ছবি আপলোডে সমস্যা',
+            text: driveData.message
+          });
           overlay.classList.remove('open');
           btn.disabled = false;
           return;
         }
 
         const idType = document.getElementById('idType').value;
-        const idNum = document.getElementById('nidOrBirthCert').value;
+        const idNum = document.getElementById('idNumber').value;
+
+        // ── Batch Formatting Logic ──
+        const rawBatch = document.getElementById('batchNum').value;
+        const formattedBatch = `Batch-${String(rawBatch).padStart(2, '0')}`;
 
         const studentPayload = {
           fullName: document.getElementById('fullName').value,
@@ -614,7 +630,9 @@
             name: document.getElementById('spouseName').value,
             profession: document.getElementById('spouseProfession').value
           },
-          nidOrBirthCert: `${idType}: ${idNum}`,
+          documents: {
+            [idType === 'NID' ? 'nid' : 'birthCertificate']: idNum
+          },
           photoLink: driveData.photoLink,
           contact: {
             phone: document.getElementById('phone').value,
@@ -630,12 +648,12 @@
             motherProfession: document.getElementById('motherProfession').value
           },
           educationalBackground: document.getElementById('educationalBackground').value,
-          admissionInfo: {
+          enrollments: [{
             courseName: document.getElementById('courseName').value,
-            batchNum: document.getElementById('batchNum').value,
-            courseStatus: document.getElementById('courseStatus').value,
-            courseType: document.getElementById('courseType').value
-          },
+            batchNo: formattedBatch,  // Use formatted batch
+            courseType: document.getElementById('courseType').value,
+            status: document.getElementById('courseStatus').value
+          }],
           skillsAndLanguages: {
             skills: document.getElementById('skills').value,
             languages: document.getElementById('languages').value
@@ -661,24 +679,59 @@
           },
           body: JSON.stringify(studentPayload)
         });
+
         const studentData = await studentRes.json();
 
         overlay.classList.remove('open');
         btn.disabled = false;
 
+        // ── DUPLICATE CHECK: 409 Status Handling ──
+        if (studentRes.status === 409) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'অ্যাকাউন্ট আগে থেকেই আছে!',
+            text: studentData.message || 'এই ফোন নম্বর বা ইমেইল দিয়ে আগে থেকেই একজন স্টুডেন্ট ডাটাবেসে রয়েছে। নতুন কোর্স যুক্ত করতে তার প্রোফাইলে যান।',
+            showCancelButton: true,
+            confirmButtonText: 'প্রোফাইলে যান',
+            cancelButtonText: 'ফর্ম এডিট করুন',
+            confirmButtonColor: '#3B82F6',
+            cancelButtonColor: '#64748B'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              window.location.href = `/student-profile.html?id=${studentData.studentId || studentData.studentID}`;
+            }
+          });
+          return;
+        }
+
         if (studentData.success) {
-          alert(`সফলভাবে যুক্ত হয়েছে! Student ID: ${studentData.data.studentID}`);
-          document.getElementById('studentForm').reset();
-          document.getElementById('photoPreview').style.display = 'none';
-          document.getElementById('photoLabel').textContent = 'Click to upload student photo';
-          window.location.href = '/all-students.html';
+          Swal.fire({
+            icon: 'success',
+            title: 'সফল!',
+            text: `স্টুডেন্ট সফলভাবে যুক্ত হয়েছে! Student ID: ${studentData.data?.studentID || ''}`,
+            timer: 2000,
+            showConfirmButton: false
+          }).then(() => {
+            document.getElementById('studentForm').reset();
+            document.getElementById('photoPreview').style.display = 'none';
+            document.getElementById('photoLabel').textContent = 'Click to upload student photo';
+            window.location.href = '/all-students.html';
+          });
         } else {
-          alert("ডাটাবেস সেভ এরর: " + studentData.message);
+          Swal.fire({
+            icon: 'error',
+            title: 'ভুল হয়েছে!',
+            text: "ডাটাবেস সেভ এরর: " + studentData.message
+          });
         }
       } catch (err) {
         overlay.classList.remove('open');
         btn.disabled = false;
-        alert("সার্ভার এরর! কানেকশন চেক করুন।");
+        Swal.fire({
+          icon: 'error',
+          title: 'সার্ভার এরর!',
+          text: 'কানেকশন চেক করুন। সার্ভারের সাথে যোগাযোগ করা যাচ্ছে না।'
+        });
         console.error(err);
       }
     });
