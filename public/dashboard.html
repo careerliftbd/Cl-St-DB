@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard | Careerlift Admin</title>
+  <base href="/">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* আগের সব CSS ঠিক আছে, কিছুই পরিবর্তন করতে হবে না */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -26,6 +26,7 @@
       --sidebar-w: 240px;
       --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
       --shadow: 0 4px 16px rgba(0,0,0,.06), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.12);
       --radius: 12px;
       --radius-sm: 8px;
       --radius-xs: 6px;
@@ -159,6 +160,79 @@
     .refresh-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
     .refresh-btn.spinning svg { animation: spin .7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── ATTENDANCE DROPDOWN ── */
+    .attendance-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 13px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); color: var(--text-secondary);
+      font-size: 12px; font-weight: 500; font-family: inherit;
+      cursor: pointer; transition: all .15s;
+      position: relative;
+    }
+    .attendance-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+    .attendance-btn.active { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+    .attendance-btn .chevron { transition: transform .2s; }
+    .attendance-btn.active .chevron { transform: rotate(180deg); }
+
+    .attendance-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      width: 220px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-lg);
+      z-index: 200;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(-8px) scale(0.96);
+      pointer-events: none;
+      transition: all .2s cubic-bezier(.16,1,.3,1);
+    }
+    .attendance-menu.open {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+    .attendance-menu::before {
+      content: '';
+      position: absolute;
+      top: -5px; right: 20px;
+      width: 10px; height: 10px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      border-top: 1px solid var(--border);
+      transform: rotate(45deg);
+    }
+    .attendance-menu-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 13px; font-weight: 500;
+      transition: all .15s;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .attendance-menu-item:last-child { border-bottom: none; }
+    .attendance-menu-item:hover { background: var(--primary-light); color: var(--primary-dark); }
+    .attendance-menu-item svg { flex-shrink: 0; }
+    .attendance-menu-item .item-icon {
+      width: 28px; height: 28px;
+      border-radius: var(--radius-xs);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .attendance-menu-item:hover .item-icon.blue { background: #DBEAFE; }
+    .attendance-menu-item:hover .item-icon.green { background: #D1FAE5; }
+    .attendance-menu-item:hover .item-icon.purple { background: #EDE9FE; }
+    .attendance-menu-footer {
+      padding: 8px 14px;
+      background: var(--border-light);
+      font-size: 10px; color: var(--text-muted);
+      text-align: center;
+    }
 
     /* ── PAGE ── */
     .page { padding: 28px; }
@@ -334,6 +408,17 @@
 <base target="_blank">
 </head>
 <body>
+<script>
+  // Force all links to open in same tab - override any browser defaults
+  document.addEventListener('click', function(e) {
+    const link = e.target.closest('a');
+    if (link && link.href && !link.href.startsWith('javascript:') && !link.href.startsWith('#')) {
+      e.preventDefault();
+      window.location.href = link.href;
+    }
+  }, true);
+</script>
+
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
@@ -348,7 +433,6 @@
     <nav>
       <div class="nav-section">
         <div class="nav-label">Overview</div>
-        <!-- ✅ ক্লিন URL: /dashboard -->
         <a href="/dashboard" class="nav-item active">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
           Dashboard
@@ -356,22 +440,18 @@
       </div>
       <div class="nav-section">
         <div class="nav-label">Students</div>
-        <!-- ✅ ক্লিন URL: /all-students -->
         <a href="/all-students" class="nav-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           All Students
         </a>
-        <!-- ✅ ক্লিন URL: /running-students -->
         <a href="/running-students" class="nav-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           Running Students
         </a>
-        <!-- ✅ ক্লিন URL: /alumni -->
         <a href="/alumni" class="nav-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
           Alumni
         </a>
-        <!-- ✅ ক্লিন URL: /next-batch -->
         <a href="/next-batch" class="nav-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
           Next Batch
@@ -380,7 +460,6 @@
     </nav>
 
     <div class="sidebar-footer">
-      <!-- ✅ ক্লিন URL: /add-student -->
       <a href="/add-student" class="nav-add">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add New Student
@@ -398,16 +477,61 @@
     <div class="topbar">
       <div class="topbar-left">
         <div class="topbar-title">System Dashboard</div>
-        <div class="topbar-sub" id="lastUpdated">Loading data…</div>
+        <div class="topbar-sub" id="lastUpdated">Loading data...</div>
       </div>
       <div class="topbar-right">
         <button class="backup-btn" id="manualBackupBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
           Instant Backup to Drive
         </button>
+
+        <!-- Attendance System Dropdown -->
+        <div class="relative" style="position:relative;">
+          <button class="attendance-btn" id="attendanceBtn" onclick="toggleAttendanceMenu(event)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span>Attendance System</span>
+            <svg class="chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="attendance-menu" id="attendanceMenu">
+            <a href="/add-teacher" class="attendance-menu-item" onclick="closeAttendanceMenu()">
+              <div class="item-icon blue" style="background:var(--primary-light)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+              </div>
+              <div>
+                <div style="font-weight:600;">Add Teacher</div>
+                <div style="font-size:11px;color:var(--text-muted);">Register new teacher</div>
+              </div>
+            </a>
+            <a href="/view-attendance" class="attendance-menu-item" onclick="closeAttendanceMenu()">
+              <div class="item-icon green" style="background:var(--accent-light)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+              </div>
+              <div>
+                <div style="font-weight:600;">Attendance Report</div>
+                <div style="font-size:11px;color:var(--text-muted);">View daily records</div>
+              </div>
+            </a>
+            <a href="/teacher-list.html" class="attendance-menu-item" onclick="closeAttendanceMenu()">
+              <div class="item-icon purple" style="background:#F5F3FF">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <div>
+                <div style="font-weight:600;">Teacher List</div>
+                <div style="font-size:11px;color:var(--text-muted);">Manage all teachers</div>
+              </div>
+            </a>
+            <div class="attendance-menu-footer">
+              Careerlift Attendance Module
+            </div>
+          </div>
+        </div>
+
         <button class="refresh-btn" id="refreshBtn" onclick="loadDashboard()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
           Refresh
+        </button>
+        <button class="refresh-btn" onclick="clearBrowserData()" title="Clear cache" style="padding:7px 10px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         </button>
         <div class="admin-chip">
           <div class="admin-avatar">SA</div>
@@ -421,28 +545,24 @@
 
       <!-- QUICK LINKS -->
       <div class="quick-grid">
-        <!-- ✅ ক্লিন URL: /all-students -->
         <a href="/all-students" class="quick-link">
           <div class="quick-link-icon" style="background:var(--primary-light)">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
           </div>
           All Students
         </a>
-        <!-- ✅ ক্লিন URL: /running-students -->
         <a href="/running-students" class="quick-link">
           <div class="quick-link-icon" style="background:var(--accent-light)">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           </div>
           Running Students
         </a>
-        <!-- ✅ ক্লিন URL: /alumni -->
         <a href="/alumni" class="quick-link">
           <div class="quick-link-icon" style="background:#F5F3FF">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
           </div>
           Alumni
         </a>
-        <!-- ✅ ক্লিন URL: /add-student -->
         <a href="/add-student" class="quick-link">
           <div class="quick-link-icon" style="background:#FFF7ED">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -461,7 +581,7 @@
             <span class="stat-trend trend-neu" id="totalTrend">—</span>
           </div>
           <div>
-            <div class="stat-value loading-num" id="totalCount">…</div>
+            <div class="stat-value loading-num" id="totalCount">...</div>
             <div class="stat-label">Total Students</div>
             <div class="stat-sub">All time enrollments</div>
           </div>
@@ -475,7 +595,7 @@
             <span class="stat-trend trend-neu" id="runningTrend">—</span>
           </div>
           <div>
-            <div class="stat-value loading-num" id="runningCount">…</div>
+            <div class="stat-value loading-num" id="runningCount">...</div>
             <div class="stat-label">Running Students</div>
             <div class="stat-sub">Currently active</div>
           </div>
@@ -489,7 +609,7 @@
             <span class="stat-trend trend-neu" id="alumniTrend">—</span>
           </div>
           <div>
-            <div class="stat-value loading-num" id="alumniCount">…</div>
+            <div class="stat-value loading-num" id="alumniCount">...</div>
             <div class="stat-label">Alumni</div>
             <div class="stat-sub">Completed course</div>
           </div>
@@ -500,10 +620,10 @@
             <div class="stat-icon red">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             </div>
-            <span class="stat-trend trend-down" id="hotTrend">Hot 🔥</span>
+            <span class="stat-trend trend-down" id="hotTrend">Hot</span>
           </div>
           <div>
-            <div class="stat-value loading-num" id="hotVisaCount">…</div>
+            <div class="stat-value loading-num" id="hotVisaCount">...</div>
             <div class="stat-label">Hot Priority Visa</div>
             <div class="stat-sub">Needs urgent attention</div>
           </div>
@@ -590,6 +710,21 @@
   </main>
 
   <script>
+    /* ── CLEAR BROWSER DATA ── */
+    function clearBrowserData() {
+      if(confirm('Clear all saved form data and cache?')) {
+        localStorage.clear();
+        sessionStorage.clear();
+        // Clear form autocomplete data by resetting inputs
+        document.querySelectorAll('input').forEach(input => {
+          input.value = '';
+          input.autocomplete = 'off';
+        });
+        alert('Cache cleared! Please refresh the page.');
+        location.reload();
+      }
+    }
+
     /* ── AUTH ── */
     const token = localStorage.getItem('adminToken');
     if (!token) window.location.href = '/index.html';
@@ -598,10 +733,46 @@
       window.location.href = '/index.html';
     });
 
+    /* ── ATTENDANCE DROPDOWN ── */
+    function toggleAttendanceMenu(e) {
+      e.stopPropagation();
+      const btn = document.getElementById('attendanceBtn');
+      const menu = document.getElementById('attendanceMenu');
+      const isOpen = menu.classList.contains('open');
+
+      if (isOpen) {
+        closeAttendanceMenu();
+      } else {
+        menu.classList.add('open');
+        btn.classList.add('active');
+      }
+    }
+
+    function closeAttendanceMenu() {
+      const btn = document.getElementById('attendanceBtn');
+      const menu = document.getElementById('attendanceMenu');
+      menu.classList.remove('open');
+      btn.classList.remove('active');
+    }
+
+    // Close on click outside
+    document.addEventListener('click', (e) => {
+      const dropdown = document.getElementById('attendanceBtn');
+      const menu = document.getElementById('attendanceMenu');
+      if (!dropdown.contains(e.target) && !menu.contains(e.target)) {
+        closeAttendanceMenu();
+      }
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeAttendanceMenu();
+    });
+
     /* ── MANUAL BACKUP ── */
     document.getElementById('manualBackupBtn').addEventListener('click', async () => {
       const btn = document.getElementById('manualBackupBtn');
-      if (!confirm("আপনি কি এখনই ডাটাবেসের একটি ব্যাকআপ ড্রাইভে পাঠাতে চান?")) return;
+      if (!confirm("Are you sure you want to backup database to Drive now?")) return;
 
       try {
         btn.disabled = true;
@@ -616,10 +787,10 @@
         if (data.success) {
           alert(data.message);
         } else {
-          alert("ভুল হয়েছে: " + data.message);
+          alert("Error: " + data.message);
         }
       } catch (err) {
-        alert("সার্ভার কানেকশন এরর!");
+        alert("Server connection error!");
       } finally {
         btn.disabled = false;
         btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg> Instant Backup to Drive`;
@@ -668,7 +839,7 @@
     async function loadDashboard() {
       const btn = document.getElementById('refreshBtn');
       btn.classList.add('spinning');
-      document.getElementById('lastUpdated').textContent = 'Refreshing…';
+      document.getElementById('lastUpdated').textContent = 'Refreshing...';
 
       try {
         const res    = await fetch('/api/students', { headers: { 'Authorization': `Bearer ${token}` } });

@@ -18,8 +18,43 @@ const protect = (req, res, next) => {
     try {
         // টোকেন ডিকোড ও ভেরিফাই করা
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.admin = decoded; // রিকোয়েস্ট অবজেক্টে অ্যাডমিন ডাটা রেখে দেওয়া
+
+        // ✅ FIX: চিনে নিন এটি Admin নাকি Teacher
+        if (decoded.role === 'SuperAdmin') {
+            // ── ADMIN TOKEN ──
+            req.admin = { 
+                role: decoded.role, 
+                email: decoded.email 
+            };
+            // Teacher controller-এর জন্য compatibility
+            req.user = { 
+                id: decoded.email, // Admin-এর ক্ষেত্রে email ইউনিক identifier
+                role: decoded.role,
+                email: decoded.email
+            };
+            
+        } else if (decoded.role === 'Teacher') {
+            // ── TEACHER TOKEN ──
+            req.user = { 
+                id: decoded.id,      // Teacher._id (ObjectId)
+                role: decoded.role,
+                // Teacher login-এ id আছে, email নেই
+            };
+            // Admin controller-এর জন্য compatibility (যদি লাগে)
+            req.admin = {
+                role: decoded.role,
+                email: null
+            };
+            
+        } else {
+            return res.status(403).json({
+                success: false,
+                message: 'অজানা রোল! অ্যাক্সেস নিষিদ্ধ।'
+            });
+        }
+
         next(); // পরবর্তী কাজে যাওয়ার অনুমতি
+
     } catch (error) {
         return res.status(401).json({ 
             success: false, 
@@ -28,5 +63,27 @@ const protect = (req, res, next) => {
     }
 };
 
+// ✅ NEW: Admin-only middleware (optional but useful)
+const adminOnly = (req, res, next) => {
+    if (req.admin?.role !== 'SuperAdmin') {
+        return res.status(403).json({
+            success: false,
+            message: 'শুধুমাত্র অ্যাডমিনের অনুমতি আছে!'
+        });
+    }
+    next();
+};
+
+// ✅ NEW: Teacher-only middleware (optional but useful)
+const teacherOnly = (req, res, next) => {
+    if (req.user?.role !== 'Teacher') {
+        return res.status(403).json({
+            success: false,
+            message: 'শুধুমাত্র শিক্ষকের অনুমতি আছে!'
+        });
+    }
+    next();
+};
+
 // সঠিকভাবে এক্সপোর্ট করা হলো
-module.exports = { protect };
+module.exports = { protect, adminOnly, teacherOnly };

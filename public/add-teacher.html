@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add New Teacher | Careerlift Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F3F4F6; color: #111827; }
+
+    /* ===== BACK TO DASHBOARD NAVBAR ===== */
+    .dash-navbar {
+      background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
+      padding: 0;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 4px 15px rgba(30, 58, 138, 0.25);
+    }
+    .dash-navbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 52px;
+    }
+    @media (max-width: 640px) {
+      .dash-navbar-inner { padding: 0 16px; }
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,0.9);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .back-btn:hover {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      transform: translateX(-2px);
+    }
+    .back-btn svg {
+      transition: transform 0.2s ease;
+    }
+    .back-btn:hover svg {
+      transform: translateX(-3px);
+    }
+    .nav-title {
+      color: #fff;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.3px;
+    }
+    .nav-breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,0.6);
+      font-size: 12px;
+    }
+    .nav-breadcrumb .sep {
+      color: rgba(255,255,255,0.3);
+    }
+    .nav-breadcrumb a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-breadcrumb a:hover {
+      color: #fff;
+    }
+
+    .container { max-width: 700px; margin: 40px auto; padding: 0 20px; }
+    .card { background: #fff; padding: 32px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+
+    h2 { font-size: 22px; font-weight: 700; margin-bottom: 24px; color: #111827; border-bottom: 1px solid #E5E7EB; padding-bottom: 12px; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
+
+    label { font-size: 13px; font-weight: 600; color: #374151; }
+    input, select {
+      padding: 12px 16px; border: 1px solid #D1D5DB; border-radius: 8px; font-family: inherit; font-size: 14px; transition: 0.2s; background: #fff;
+    }
+    input:focus, select:focus { border-color: #4F46E5; outline: none; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+    select { cursor: pointer; }
+
+    .section-title { font-size: 16px; font-weight: 700; color: #111827; margin-top: 32px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+
+    .class-row {
+      display: grid; grid-template-columns: 1fr 1fr auto; gap: 16px; align-items: end;
+      background: #F9FAFB; padding: 16px; border-radius: 8px; margin-bottom: 12px; border: 1px dashed #D1D5DB;
+    }
+    .btn-remove {
+      background: #FEE2E2; color: #DC2626; border: none; padding: 12px; border-radius: 8px;
+      cursor: pointer; font-weight: 600; transition: 0.2s;
+    }
+    .btn-remove:hover { background: #FCA5A5; }
+
+    .btn-add-class {
+      background: #EEF2FF; color: #4F46E5; border: 1px dashed #4F46E5; padding: 10px 16px;
+      border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 6px;
+    }
+    .btn-add-class:hover { background: #E0E7FF; }
+
+    .btn-submit {
+      width: 100%; background: #111827; color: #fff; border: none; padding: 16px;
+      border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 32px; transition: 0.2s;
+    }
+    .btn-submit:hover { background: #374151; }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .class-row { grid-template-columns: 1fr; }
+      .btn-remove { width: 100%; }
+      .nav-breadcrumb { display: none !important; }
+    }
+  </style>
+<base target="_blank">
+</head>
+<body>
+
+  <!-- Back to Dashboard Navbar -->
+  <nav class="dash-navbar">
+    <div class="dash-navbar-inner">
+      <a href="dashboard.html" class="back-btn">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+        </svg>
+        <span>Dashboard</span>
+      </a>
+      <div class="flex items-center gap-4">
+        <div class="nav-breadcrumb">
+          <a href="dashboard.html">Admin</a>
+          <span class="sep">/</span>
+          <span style="color: rgba(255,255,255,0.9);">Add Teacher</span>
+        </div>
+        <div class="nav-title">New Teacher</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <h2>Register New Teacher</h2>
+
+      <form id="addTeacherForm">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Full Name *</label>
+            <input type="text" id="t_name" placeholder="e.g. Mostafizur Rahman" required>
+          </div>
+          <div class="form-group">
+            <label>Phone Number (Login ID) *</label>
+            <input type="text" id="t_phone" placeholder="e.g. 01700000000" required>
+          </div>
+          <div class="form-group">
+            <label>Email Address (Optional)</label>
+            <input type="email" id="t_email" placeholder="e.g. teacher@careerlift.com">
+          </div>
+          <div class="form-group full">
+            <label>Login Password *</label>
+            <input type="text" id="t_password" placeholder="Set a secure password" required minlength="6">
+          </div>
+        </div>
+
+        <div class="section-title">
+          Assign Classes
+          <button type="button" class="btn-add-class" onclick="addClassRow()">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+            Add Class
+          </button>
+        </div>
+
+        <div id="classesContainer">
+          <!-- Default 1st Class Row with Dropdowns -->
+          <div class="class-row">
+            <div class="form-group">
+              <label>Course Name *</label>
+              <select class="course-select" required>
+                <option value="">Select Course</option>
+                <option value="Primary Healthcare Service Level 2">Primary Healthcare Service Level 2</option>
+                <option value="Dementia Caregiving (Level 3)">Dementia Caregiving (Level 3)</option>
+                <option value="Dementia Caregiving (Level 2)">Dementia Caregiving (Level 2)</option>
+                <option value="Caregiving for Persons with Special Needs (Level-3)">Caregiving for Persons with Special Needs (Level-3)</option>
+                <option value="Caregiving for Persons with Special Needs (Level-2)">Caregiving for Persons with Special Needs (Level-2)</option>
+                <option value="English for Work (Level 2)">English for Work (Level 2)</option>
+                <option value="English for Work (Level 3)">English for Work (Level 3)</option>
+                <option value="Skin Care (Level 3)">Skin Care (Level 3)</option>
+                <option value="Skin Care (Level 2)">Skin Care (Level 2)</option>
+                <option value="Japanese Language (Level-2)">Japanese Language (Level-2)</option>
+                <option value="Japanese Language (Level-3)">Japanese Language (Level-3)</option>
+                <option value="Caregiving For Infant, Toddler and Children Level: 02">Caregiving For Infant, Toddler and Children Level: 02</option>
+                <option value="Caregiving For Elderly Persons Level: 02">Caregiving For Elderly Persons Level: 02</option>
+                <option value="Caregiving For Infant, Toddler and Children Level: 03">Caregiving For Infant, Toddler and Children Level: 03</option>
+                <option value="Caregiving For Elderly Persons Level: 03">Caregiving For Elderly Persons Level: 03</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Batch No *</label>
+              <select class="batch-select" required>
+                <option value="">Loading Batches...</option>
+              </select>
+            </div>
+            <button type="button" class="btn-remove" style="visibility: hidden;">Remove</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">Save Teacher Profile</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ── GUARD: adminToken ব্যবহার করা হচ্ছে ──
+    const adminToken = localStorage.getItem('adminToken');
+    const teacherToken = localStorage.getItem('teacherToken');
+
+    if (!adminToken) {
+      if (teacherToken) {
+        window.location.href = '/teacher/dashboard.html';
+      } else {
+        window.location.href = '/index.html';
+      }
+    }
+
+    // ── GLOBAL: Store batches data for reuse ──
+    let globalBatches = [];
+
+    // ── LOAD BATCHES FROM BACKEND ──
+    async function loadBatches() {
+      try {
+        const response = await fetch('/api/attendance/options', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          globalBatches = data.batches;
+
+          // Populate all existing batch dropdowns
+          document.querySelectorAll('.batch-select').forEach(select => {
+            populateBatchSelect(select);
+          });
+        }
+      } catch (error) {
+        console.error("Batch load error:", error);
+        document.querySelectorAll('.batch-select').forEach(select => {
+          select.innerHTML = '<option value="">Error loading</option>';
+        });
+      }
+    }
+
+    // ── POPULATE A SINGLE BATCH DROPDOWN ──
+    function populateBatchSelect(selectElement) {
+      selectElement.innerHTML = '<option value="">Select Batch</option>';
+      globalBatches.forEach(batch => {
+        const option = document.createElement('option');
+        option.value = batch;
+        option.textContent = batch;
+        selectElement.appendChild(option);
+      });
+    }
+
+    // ── DYNAMIC CLASS ROWS ──
+    const classesContainer = document.getElementById('classesContainer');
+
+    function addClassRow() {
+      const row = document.createElement('div');
+      row.className = 'class-row';
+      row.innerHTML = `
+        <div class="form-group">
+          <label>Course Name *</label>
+          <select class="course-select" required>
+            <option value="">Select Course</option>
+            <option value="Primary Healthcare Service Level 2">Primary Healthcare Service Level 2</option>
+            <option value="Dementia Caregiving (Level 3)">Dementia Caregiving (Level 3)</option>
+            <option value="Dementia Caregiving (Level 2)">Dementia Caregiving (Level 2)</option>
+            <option value="Caregiving for Persons with Special Needs (Level-3)">Caregiving for Persons with Special Needs (Level-3)</option>
+            <option value="Caregiving for Persons with Special Needs (Level-2)">Caregiving for Persons with Special Needs (Level-2)</option>
+            <option value="English for Work (Level 2)">English for Work (Level 2)</option>
+            <option value="English for Work (Level 3)">English for Work (Level 3)</option>
+            <option value="Skin Care (Level 3)">Skin Care (Level 3)</option>
+            <option value="Skin Care (Level 2)">Skin Care (Level 2)</option>
+            <option value="Japanese Language (Level-2)">Japanese Language (Level-2)</option>
+            <option value="Japanese Language (Level-3)">Japanese Language (Level-3)</option>
+            <option value="Caregiving For Infant, Toddler and Children Level: 02">Caregiving For Infant, Toddler and Children Level: 02</option>
+            <option value="Caregiving For Elderly Persons Level: 02">Caregiving For Elderly Persons Level: 02</option>
+            <option value="Caregiving For Infant, Toddler and Children Level: 03">Caregiving For Infant, Toddler and Children Level: 03</option>
+            <option value="Caregiving For Elderly Persons Level: 03">Caregiving For Elderly Persons Level: 03</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Batch No *</label>
+          <select class="batch-select" required>
+            <option value="">Select Batch</option>
+          </select>
+        </div>
+        <button type="button" class="btn-remove" onclick="this.parentElement.remove()">Remove</button>
+      `;
+
+      // Populate batch dropdown for the new row
+      const newBatchSelect = row.querySelector('.batch-select');
+      if (globalBatches.length > 0) {
+        populateBatchSelect(newBatchSelect);
+      }
+
+      classesContainer.appendChild(row);
+    }
+
+    // ── FORM SUBMIT ──
+    document.getElementById('addTeacherForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const btn = document.getElementById('submitBtn');
+      btn.textContent = 'Saving...';
+      btn.disabled = true;
+
+      const name = document.getElementById('t_name').value;
+      const phone = document.getElementById('t_phone').value;
+      const email = document.getElementById('t_email').value;
+      const password = document.getElementById('t_password').value;
+
+      const assignedClasses = [];
+      const classRows = document.querySelectorAll('.class-row');
+
+      classRows.forEach(row => {
+        const courseName = row.querySelector('.course-select').value;
+        const batchNo = row.querySelector('.batch-select').value;
+
+        if(courseName && batchNo) {
+          assignedClasses.push({ courseName, batchNo });
+        }
+      });
+
+      // Validation: at least one class must be assigned
+      if (assignedClasses.length === 0) {
+        Swal.fire('Error!', 'Please assign at least one class with course and batch!', 'error');
+        btn.textContent = 'Save Teacher Profile';
+        btn.disabled = false;
+        return;
+      }
+
+      const payload = { name, phone, email, password, assignedClasses };
+
+      try {
+        const res = await fetch('/api/teachers', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          Swal.fire('Success!', data.message, 'success').then(() => {
+            document.getElementById('addTeacherForm').reset();
+            // Reset to default row with dropdowns
+            classesContainer.innerHTML = `
+              <div class="class-row">
+                <div class="form-group">
+                  <label>Course Name *</label>
+                  <select class="course-select" required>
+                    <option value="">Select Course</option>
+                    <option value="Primary Healthcare Service Level 2">Primary Healthcare Service Level 2</option>
+                    <option value="Dementia Caregiving (Level 3)">Dementia Caregiving (Level 3)</option>
+                    <option value="Dementia Caregiving (Level 2)">Dementia Caregiving (Level 2)</option>
+                    <option value="Caregiving for Persons with Special Needs (Level-3)">Caregiving for Persons with Special Needs (Level-3)</option>
+                    <option value="Caregiving for Persons with Special Needs (Level-2)">Caregiving for Persons with Special Needs (Level-2)</option>
+                    <option value="English for Work (Level 2)">English for Work (Level 2)</option>
+                    <option value="English for Work (Level 3)">English for Work (Level 3)</option>
+                    <option value="Skin Care (Level 3)">Skin Care (Level 3)</option>
+                    <option value="Skin Care (Level 2)">Skin Care (Level 2)</option>
+                    <option value="Japanese Language (Level-2)">Japanese Language (Level-2)</option>
+                    <option value="Japanese Language (Level-3)">Japanese Language (Level-3)</option>
+                    <option value="Caregiving For Infant, Toddler and Children Level: 02">Caregiving For Infant, Toddler and Children Level: 02</option>
+                    <option value="Caregiving For Elderly Persons Level: 02">Caregiving For Elderly Persons Level: 02</option>
+                    <option value="Caregiving For Infant, Toddler and Children Level: 03">Caregiving For Infant, Toddler and Children Level: 03</option>
+                    <option value="Caregiving For Elderly Persons Level: 03">Caregiving For Elderly Persons Level: 03</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Batch No *</label>
+                  <select class="batch-select" required>
+                    <option value="">Select Batch</option>
+                  </select>
+                </div>
+                <button type="button" class="btn-remove" style="visibility: hidden;">Remove</button>
+              </div>`;
+
+            // Repopulate batches for the reset row
+            if (globalBatches.length > 0) {
+              const resetBatchSelect = classesContainer.querySelector('.batch-select');
+              populateBatchSelect(resetBatchSelect);
+            }
+          });
+        } else {
+          Swal.fire('Error!', data.message, 'error');
+        }
+      } catch (err) {
+        Swal.fire('Error!', 'Server connection failed!', 'error');
+      } finally {
+        btn.textContent = 'Save Teacher Profile';
+        btn.disabled = false;
+      }
+    });
+
+    // ── INIT: Load batches on page load ──
+    document.addEventListener('DOMContentLoaded', loadBatches);
+  </script>
+</body>
+</html>

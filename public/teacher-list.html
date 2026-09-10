@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>শিক্ষক ব্যবস্থাপনা | Careerlift</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'bengali': ['"Noto Sans Bengali"', 'sans-serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: { 50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a' },
+                        slate: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1', 400: '#94a3b8', 500: '#64748b', 600: '#475569', 700: '#334155', 800: '#1e293b', 900: '#0f172a' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', 'Noto Sans Bengali', sans-serif; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
+        .row-hover:hover { background: #f8fafc; }
+        .badge { animation: popIn 0.25s ease; }
+        @keyframes popIn { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-enter { animation: modalIn 0.2s ease; }
+        @keyframes modalIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .toast-enter { animation: toastIn 0.3s ease; }
+        @keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        /* Back to Dashboard Navbar Styles */
+        .dash-navbar {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            box-shadow: 0 4px 15px rgba(30, 58, 138, 0.25);
+        }
+        .dash-navbar-inner {
+            max-width: 7xl;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 52px;
+        }
+        @media (min-width: 640px) {
+            .dash-navbar-inner { padding: 0 1.5rem; }
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .back-btn:hover {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            transform: translateX(-2px);
+        }
+        .back-btn svg {
+            transition: transform 0.2s ease;
+        }
+        .back-btn:hover svg {
+            transform: translateX(-3px);
+        }
+        .nav-title {
+            color: #fff;
+            font-weight: 700;
+            font-size: 15px;
+            letter-spacing: 0.3px;
+        }
+        .nav-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255,255,255,0.6);
+            font-size: 12px;
+        }
+        .nav-breadcrumb .sep {
+            color: rgba(255,255,255,0.3);
+        }
+        .nav-breadcrumb a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .nav-breadcrumb a:hover {
+            color: #fff;
+        }
+    </style>
+<base target="_blank">
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+    <!-- Back to Dashboard Navbar -->
+    <nav class="dash-navbar">
+        <div class="dash-navbar-inner">
+            <a href="dashboard.html" class="back-btn">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            <div class="flex items-center gap-4">
+                <div class="nav-breadcrumb hidden sm:flex">
+                    <a href="dashboard.html">Admin</a>
+                    <span class="sep">/</span>
+                    <span style="color: rgba(255,255,255,0.9);">শিক্ষক ব্যবস্থাপনা</span>
+                </div>
+                <div class="nav-title">Attendance Report</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Simple Top Bar -->
+    <header class="bg-white border-b border-slate-200 sticky top-[52px] z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-primary-600 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-graduation-cap text-white text-sm"></i>
+                </div>
+                <div>
+                    <h1 class="font-bengali font-bold text-slate-800 text-base leading-tight">শিক্ষক ব্যবস্থাপনা</h1>
+                    <p class="text-[11px] text-slate-400">Careerlift Admin</p>
+                </div>
+            </div>
+            <button onclick="openAddTeacherModal()" class="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                <i class="fas fa-plus text-xs"></i>
+                <span class="font-bengali hidden sm:inline">নতুন শিক্ষক</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-5">
+
+        <!-- Stats Row -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="bg-white rounded-xl p-4 border border-slate-100 card-hover transition-all">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs text-slate-500 font-bengali">মোট শিক্ষক</span>
+                    <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-users text-blue-500 text-xs"></i>
+                    </div>
+                </div>
+                <p class="text-2xl font-bold text-slate-800" id="totalTeachers">0</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 border border-slate-100 card-hover transition-all">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs text-slate-500 font-bengali">সক্রিয়</span>
+                    <div class="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-500 text-xs"></i>
+                    </div>
+                </div>
+                <p class="text-2xl font-bold text-slate-800" id="activeTeachers">0</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 border border-slate-100 card-hover transition-all">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs text-slate-500 font-bengali">কোর্স অ্যাসাইন</span>
+                    <div class="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-book text-purple-500 text-xs"></i>
+                    </div>
+                </div>
+                <p class="text-2xl font-bold text-slate-800" id="totalAssignments">0</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 border border-slate-100 card-hover transition-all">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs text-slate-500 font-bengali">অপেক্ষমান</span>
+                    <div class="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-clock text-amber-500 text-xs"></i>
+                    </div>
+                </div>
+                <p class="text-2xl font-bold text-slate-800" id="pendingAssignments">0</p>
+            </div>
+        </div>
+
+        <!-- Search & Filter -->
+        <div class="bg-white rounded-xl border border-slate-100 p-3">
+            <div class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-1">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="searchInput" placeholder="নাম বা ফোন দিয়ে খুঁজুন..." 
+                        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                        class="w-full pl-9 pr-4 py-2.5 rounded-lg border border-slate-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none text-sm transition-all"
+                        onkeyup="filterTeachers()">
+                </div>
+                <div class="flex gap-2">
+                    <select id="statusFilter" onchange="filterTeachers()" 
+                        class="px-3 py-2.5 rounded-lg border border-slate-200 focus:border-primary-500 outline-none text-sm bg-white cursor-pointer">
+                        <option value="all">সব</option>
+                        <option value="active">সক্রিয়</option>
+                        <option value="inactive">নিষ্ক্রিয়</option>
+                    </select>
+                    <button onclick="loadTeachers()" class="px-3 py-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 transition-all" title="রিফ্রেশ">
+                        <i class="fas fa-sync-alt text-xs"></i>
+                    </button>
+                    <button onclick="exportData()" class="px-3 py-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 transition-all" title="এক্সপোর্ট">
+                        <i class="fas fa-download text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teacher Table -->
+        <div class="bg-white rounded-xl border border-slate-100 overflow-hidden">
+            <div class="overflow-x-auto custom-scroll">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-100">
+                            <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase">শিক্ষক</th>
+                            <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase">যোগাযোগ</th>
+                            <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase">অ্যাসাইনড ক্লাস</th>
+                            <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase">স্ট্যাটাস</th>
+                            <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase text-right">অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teacherTableBody">
+                        <tr id="loadingRow">
+                            <td colspan="5" class="px-4 py-10 text-center">
+                                <div class="flex flex-col items-center gap-2">
+                                    <div class="w-8 h-8 border-3 border-primary-200 border-t-primary-500 rounded-full animate-spin"></div>
+                                    <p class="text-slate-400 text-xs font-bengali">লোড হচ্ছে...</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="px-4 py-3 border-t border-slate-100 flex items-center justify-between">
+                <p class="text-xs text-slate-500" id="paginationInfo">০ জন</p>
+                <div class="flex gap-1">
+                    <button onclick="prevPage()" id="prevBtn" class="w-7 h-7 rounded-md border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 text-xs">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div id="pageNumbers" class="flex gap-1"></div>
+                    <button onclick="nextPage()" id="nextBtn" class="w-7 h-7 rounded-md border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 text-xs">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Assign Modal -->
+    <div id="assignModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/40" onclick="closeModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-md modal-enter">
+                <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+                    <h3 class="font-bold text-slate-800 text-sm font-bengali">কোর্স অ্যাসাইন — <span id="modalTeacherName" class="text-primary-600"></span></h3>
+                    <button onclick="closeModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                </div>
+                <div class="p-5 space-y-4">
+                    <input type="hidden" id="modalTeacherId">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1.5 font-bengali">কোর্স</label>
+                        <select id="modalCourseName" 
+                            autocomplete="off"
+                            class="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white cursor-pointer">
+                            <option value="">নির্বাচন করুন...</option>
+                            <option value="Primary Healthcare Service Level 2">Primary Healthcare Service Level 2</option>
+                            <option value="Dementia Caregiving (Level 3)">Dementia Caregiving (Level 3)</option>
+                            <option value="Dementia Caregiving (Level 2)">Dementia Caregiving (Level 2)</option>
+                            <option value="Caregiving for Persons with Special Needs (Level-3)">Caregiving for Persons with Special Needs (Level-3)</option>
+                            <option value="Caregiving for Persons with Special Needs (Level-2)">Caregiving for Persons with Special Needs (Level-2)</option>
+                            <option value="English for Work (Level 2)">English for Work (Level 2)</option>
+                            <option value="English for Work (Level 3)">English for Work (Level 3)</option>
+                            <option value="Skin Care (Level 3)">Skin Care (Level 3)</option>
+                            <option value="Skin Care (Level 2)">Skin Care (Level 2)</option>
+                            <option value="Japanese Language (Level-2)">Japanese Language (Level-2)</option>
+                            <option value="Japanese Language (Level-3)">Japanese Language (Level-3)</option>
+                            <option value="Caregiving For Infant, Toddler and Children Level: 02">Caregiving For Infant, Toddler and Children Level: 02</option>
+                            <option value="Caregiving For Elderly Persons Level: 02">Caregiving For Elderly Persons Level: 02</option>
+                            <option value="Caregiving For Infant, Toddler and Children Level: 03">Caregiving For Infant, Toddler and Children Level: 03</option>
+                            <option value="Caregiving For Elderly Persons Level: 03">Caregiving For Elderly Persons Level: 03</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1.5 font-bengali">ব্যাচ</label>
+                        <select id="modalBatchNo" 
+                            autocomplete="off"
+                            class="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-white cursor-pointer">
+                            <option value="">নির্বাচন করুন...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="px-5 py-3 border-t border-slate-100 flex gap-2 justify-end bg-slate-50">
+                    <button onclick="closeModal()" class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-white text-xs font-medium font-bengali">বাতিল</button>
+                    <button onclick="saveAssignment()" id="saveBtn" class="px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-xs font-medium font-bengali">অ্যাসাইন করুন</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/40" onclick="closeEditModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-md modal-enter">
+                <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+                    <h3 class="font-bold text-slate-800 text-sm font-bengali">তথ্য আপডেট</h3>
+                    <button onclick="closeEditModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                </div>
+                <div class="p-5 space-y-4">
+                    <input type="hidden" id="editTeacherId">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1.5 font-bengali">নাম</label>
+                        <input type="text" id="editName" 
+                            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                            class="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none text-sm">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1.5 font-bengali">ফোন</label>
+                            <input type="text" id="editPhone" 
+                                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1.5">ইমেইল</label>
+                            <input type="email" id="editEmail" 
+                                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none text-sm">
+                        </div>
+                    </div>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="editIsActive" class="w-4 h-4 rounded border-slate-300 text-primary-600">
+                        <span class="text-xs text-slate-700 font-bengali">সক্রিয়</span>
+                    </label>
+                </div>
+                <div class="px-5 py-3 border-t border-slate-100 flex gap-2 justify-end bg-slate-50">
+                    <button onclick="closeEditModal()" class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-white text-xs font-medium font-bengali">বাতিল</button>
+                    <button onclick="saveEdit()" class="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium font-bengali">সেভ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div id="deleteModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/40" onclick="closeDeleteModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-sm modal-enter text-center p-6">
+                <div class="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-trash-alt text-red-500"></i>
+                </div>
+                <h3 class="font-bold text-slate-800 text-sm mb-1 font-bengali">ডিলিট করবেন?</h3>
+                <p class="text-xs text-slate-500 mb-4 font-bengali"><span id="deleteTeacherName" class="font-semibold"></span> কে সরিয়ে ফেলা হবে</p>
+                <input type="hidden" id="deleteTeacherId">
+                <div class="flex gap-2 justify-center">
+                    <button onclick="closeDeleteModal()" class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-xs font-medium font-bengali">বাতিল</button>
+                    <button onclick="confirmDelete()" class="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-xs font-medium font-bengali">হ্যাঁ, ডিলিট</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Teacher Modal -->
+    <div id="addTeacherModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/40" onclick="closeAddTeacherModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-md modal-enter">
+                <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+                    <h3 class="font-bold text-slate-800 text-sm font-bengali">নতুন শিক্ষক</h3>
+                    <button onclick="closeAddTeacherModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                </div>
+                <div class="p-5 space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1.5 font-bengali">নাম <span class="text-red-400">*</span></label>
+                        <input type="text" id="addName" placeholder="শিক্ষকের নাম" 
+                            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                            class="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none text-sm">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1.5 font-bengali">ফোন <span class="text-red-400">*</span></label>
+                            <input type="text" id="addPhone" placeholder="01XXXXXXXXX" 
+                                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1.5">ইমেইল</label>
+                            <input type="email" id="addEmail" placeholder="ঐচ্ছিক" 
+                                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1.5 font-bengali">পাসওয়ার্ড <span class="text-red-400">*</span></label>
+                        <div class="relative">
+                            <input type="password" id="addPassword" placeholder="ন্যূনতম ৬ অক্ষর" 
+                                autocomplete="new-password"
+                                class="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none text-sm pr-10">
+                            <button type="button" onclick="togglePassword('addPassword', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                <i class="fas fa-eye text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-5 py-3 border-t border-slate-100 flex gap-2 justify-end bg-slate-50">
+                    <button onclick="closeAddTeacherModal()" class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-white text-xs font-medium font-bengali">বাতিল</button>
+                    <button onclick="saveNewTeacher()" class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-xs font-medium font-bengali">যোগ করুন</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <script>
+        let allTeachers = [], filteredTeachers = [], currentPage = 1;
+        const itemsPerPage = 10;
+        let currentTeacherForDelete = null;
+
+        document.addEventListener('DOMContentLoaded', () => { loadTeachers(); loadBatches(); });
+
+        async function loadTeachers() {
+            showLoading(true);
+            try {
+                const res = await fetch('/api/teachers', { headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` } });
+                const data = await res.json();
+                if (data.success) { allTeachers = data.data || []; updateStats(); filterTeachers(); }
+                else showToast(data.message || 'লোড ব্যর্থ', 'error');
+            } catch (err) {
+                allTeachers = [
+                    { _id: '1', name: 'মোঃ আব্দুল কাদের', phone: '01712345678', email: 'kader@email.com', isActive: true, assignedClasses: [{courseName:'Primary Healthcare Service Level 2', batchNo:'Batch 01'},{courseName:'Dementia Caregiving (Level 3)', batchNo:'Batch 05'}] },
+                    { _id: '2', name: 'ফাতেমা বেগম', phone: '01898765432', email: 'fatema@email.com', isActive: true, assignedClasses: [{courseName:'Child Caregiving (Level 2)', batchNo:'Batch 03'}] },
+                    { _id: '3', name: 'কামাল হোসেন', phone: '01611223344', email: '', isActive: false, assignedClasses: [] },
+                ];
+                updateStats(); filterTeachers();
+            }
+            showLoading(false);
+        }
+
+        async function loadBatches() {
+            try {
+                const res = await fetch('/api/attendance/options', { headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` } });
+                const data = await res.json();
+                document.getElementById('modalBatchNo').innerHTML = '<option value="">নির্বাচন করুন...</option>' + (data.batches||[]).map(b=>`<option value="${b}">${b}</option>`).join('');
+            } catch (err) {
+                const batches = ['Batch 01','Batch 02','Batch 03','Batch 04','Batch 05','Batch 06','Batch 07','Batch 08'];
+                document.getElementById('modalBatchNo').innerHTML = '<option value="">নির্বাচন করুন...</option>' + batches.map(b=>`<option value="${b}">${b}</option>`).join('');
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('teacherTableBody');
+            const start = (currentPage-1)*itemsPerPage, end = start+itemsPerPage;
+            const pageData = filteredTeachers.slice(start, end);
+
+            if (!pageData.length) {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-10 text-center"><div class="flex flex-col items-center gap-2"><i class="fas fa-search text-slate-300 text-xl"></i><p class="text-slate-400 text-xs font-bengali">কোনো শিক্ষক পাওয়া যায়নি</p></div></td></tr>`;
+                updatePagination(0); return;
+            }
+
+            tbody.innerHTML = pageData.map((t, i) => {
+                const gi = start + i;
+                const courses = t.assignedClasses || [];
+                const coursesHtml = courses.length ? courses.map(c => `
+                    <span class="badge inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium bg-primary-50 text-primary-700 border border-primary-100 mr-1 mb-1">
+                        ${c.courseName} <span class="bg-primary-100 text-primary-800 px-1 rounded text-[10px]">${c.batchNo}</span>
+                        <button onclick="removeClass('${t._id}','${c.courseName}','${c.batchNo}')" class="text-primary-400 hover:text-red-500 ml-0.5"><i class="fas fa-times text-[9px]"></i></button>
+                    </span>`).join('')
+                    : '<span class="text-slate-400 text-xs italic font-bengali">কোনো কোর্স নেই</span>';
+
+                const status = t.isActive 
+                    ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-green-50 text-green-700 border border-green-100"><span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-1"></span>সক্রিয়</span>`
+                    : `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-red-700 border border-red-100"><span class="w-1.5 h-1.5 bg-red-500 rounded-full mr-1"></span>নিষ্ক্রিয়</span>`;
+
+                const initials = t.name ? t.name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() : 'T';
+                const colors = ['bg-blue-500','bg-emerald-500','bg-purple-500','bg-amber-500','bg-rose-500'];
+
+                return `
+                <tr class="row-hover transition-colors border-b border-slate-50 last:border-0 ${!t.isActive?'bg-slate-50/40':''}">
+                    <td class="px-4 py-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 ${colors[gi%5]} rounded-lg flex items-center justify-center text-white font-bold text-xs shrink-0">${initials}</div>
+                            <div>
+                                <p class="font-semibold text-slate-800 text-sm">${t.name||'N/A'}</p>
+                                <p class="text-[10px] text-slate-400">ID: ${t._id?.toString().slice(-6)||'N/A'}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="space-y-0.5">
+                            <div class="flex items-center gap-1.5 text-xs text-slate-600"><i class="fas fa-phone text-slate-300 text-[10px]"></i>${t.phone||'N/A'}</div>
+                            ${t.email?`<div class="flex items-center gap-1.5 text-[11px] text-slate-400"><i class="fas fa-envelope text-slate-300 text-[10px]"></i>${t.email}</div>`:''}
+                        </div>
+                    </td>
+                    <td class="px-4 py-3"><div class="flex flex-wrap max-w-xs">${coursesHtml}</div></td>
+                    <td class="px-4 py-3">${status}</td>
+                    <td class="px-4 py-3">
+                        <div class="flex items-center justify-end gap-1">
+                            <button onclick="openEditModal('${t._id}')" class="w-7 h-7 rounded-md bg-amber-50 text-amber-600 hover:bg-amber-100 flex items-center justify-center transition-all" title="এডিট"><i class="fas fa-pen text-[10px]"></i></button>
+                            <button onclick="openModal('${t._id}','${t.name}')" class="w-7 h-7 rounded-md bg-primary-50 text-primary-600 hover:bg-primary-100 flex items-center justify-center transition-all" title="কোর্স অ্যাসাইন"><i class="fas fa-plus text-[10px]"></i></button>
+                            <button onclick="openDeleteModal('${t._id}','${t.name}')" class="w-7 h-7 rounded-md bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition-all" title="ডিলিট"><i class="fas fa-trash-alt text-[10px]"></i></button>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+            updatePagination(filteredTeachers.length);
+        }
+
+        function updateStats() {
+            animateNumber('totalTeachers', allTeachers.length);
+            animateNumber('activeTeachers', allTeachers.filter(t=>t.isActive).length);
+            animateNumber('totalAssignments', allTeachers.reduce((s,t)=>s+(t.assignedClasses?.length||0),0));
+            animateNumber('pendingAssignments', allTeachers.filter(t=>t.isActive).reduce((s,t)=>s+(t.assignedClasses?.length||0),0));
+        }
+
+        function animateNumber(id, target) {
+            const el = document.getElementById(id), start = parseInt(el.textContent)||0;
+            const duration = 600, st = performance.now();
+            function up(ct) { const p = Math.min((ct-st)/duration,1), e = 1-Math.pow(1-p,3); el.textContent = Math.floor(start+(target-start)*e); if(p<1) requestAnimationFrame(up); }
+            requestAnimationFrame(up);
+        }
+
+        function updatePagination(total) {
+            document.getElementById('paginationInfo').textContent = `${total} জনের মধ্যে ${Math.min((currentPage-1)*itemsPerPage+1,total)}-${Math.min(currentPage*itemsPerPage,total)}`;
+            const totalPages = Math.ceil(total/itemsPerPage);
+            document.getElementById('prevBtn').disabled = currentPage===1;
+            document.getElementById('nextBtn').disabled = currentPage>=totalPages||totalPages===0;
+            let html = '';
+            for(let i=1;i<=totalPages;i++) if(i===1||i===totalPages||(i>=currentPage-1&&i<=currentPage+1)) html+=`<button onclick="goToPage(${i})" class="w-7 h-7 rounded-md text-xs font-medium transition-all ${i===currentPage?'bg-primary-600 text-white':'border border-slate-200 text-slate-600 hover:bg-slate-50'}">${i}</button>`;
+            else if(i===currentPage-2||i===currentPage+2) html+=`<span class="text-slate-300 text-xs px-1">...</span>`;
+            document.getElementById('pageNumbers').innerHTML = html;
+        }
+
+        function goToPage(p) { currentPage=p; renderTable(); }
+        function prevPage() { if(currentPage>1) goToPage(currentPage-1); }
+        function nextPage() { goToPage(currentPage+1); }
+
+        function filterTeachers() {
+            const s = document.getElementById('searchInput').value.toLowerCase();
+            const st = document.getElementById('statusFilter').value;
+            filteredTeachers = allTeachers.filter(t => {
+                const ms = !s || (t.name||'').toLowerCase().includes(s) || (t.phone||'').includes(s);
+                const mst = st==='all' || (st==='active'&&t.isActive) || (st==='inactive'&&!t.isActive);
+                return ms && mst;
+            });
+            currentPage = 1; renderTable();
+        }
+
+        function showLoading(show) { const r = document.getElementById('loadingRow'); if(r) r.style.display = show?'':'none'; }
+
+        // Modals
+        function openModal(id, name) { document.getElementById('modalTeacherId').value=id; document.getElementById('modalTeacherName').textContent=name||''; document.getElementById('modalCourseName').value=''; document.getElementById('modalBatchNo').value=''; document.getElementById('assignModal').classList.remove('hidden'); }
+        function closeModal() { document.getElementById('assignModal').classList.add('hidden'); }
+
+        async function saveAssignment() {
+            const tid = document.getElementById('modalTeacherId').value, cn = document.getElementById('modalCourseName').value, bn = document.getElementById('modalBatchNo').value;
+            if(!cn||!bn) { showToast('কোর্স ও ব্যাচ নির্বাচন করুন','warning'); return; }
+            const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>...';
+            try {
+                const res = await fetch('/api/teachers/assign-course', { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('adminToken')}`}, body:JSON.stringify({teacherId:tid,courseName:cn,batchNo:bn}) });
+                const data = await res.json();
+                if(data.success) { showToast('অ্যাসাইন হয়েছে!','success'); closeModal(); loadTeachers(); }
+                else showToast(data.message||'ব্যর্থ','error');
+            } catch(e) { showToast('সার্ভার এরর','error'); }
+            finally { btn.disabled = false; btn.innerHTML = 'অ্যাসাইন করুন'; }
+        }
+
+        async function removeClass(tid, cn, bn) {
+            if(!confirm(`"${cn} (${bn})" রিমুভ করবেন?`)) return;
+            try {
+                const res = await fetch('/api/teachers/remove-course', { method:'DELETE', headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('adminToken')}`}, body:JSON.stringify({teacherId:tid,courseName:cn,batchNo:bn}) });
+                const data = await res.json();
+                if(data.success) { showToast('রিমুভ হয়েছে','success'); loadTeachers(); }
+                else showToast(data.message||'ব্যর্থ','error');
+            } catch(e) { showToast('সার্ভার এরর','error'); }
+        }
+
+        function openEditModal(id) {
+            const t = allTeachers.find(x=>x._id===id); if(!t) return;
+            document.getElementById('editTeacherId').value=id; document.getElementById('editName').value=t.name||''; document.getElementById('editPhone').value=t.phone||''; document.getElementById('editEmail').value=t.email||''; document.getElementById('editIsActive').checked=t.isActive;
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+        function closeEditModal() { document.getElementById('editModal').classList.add('hidden'); }
+
+        async function saveEdit() {
+            const id = document.getElementById('editTeacherId').value;
+            try {
+                const res = await fetch(`/api/teachers/${id}`, { method:'PUT', headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('adminToken')}`}, body:JSON.stringify({name:document.getElementById('editName').value,phone:document.getElementById('editPhone').value,email:document.getElementById('editEmail').value,isActive:document.getElementById('editIsActive').checked}) });
+                const data = await res.json();
+                if(data.success) { showToast('আপডেট হয়েছে','success'); closeEditModal(); loadTeachers(); }
+                else showToast(data.message||'ব্যর্থ','error');
+            } catch(e) { showToast('সার্ভার এরর','error'); }
+        }
+
+        function openDeleteModal(id, name) { currentTeacherForDelete=id; document.getElementById('deleteTeacherName').textContent=name||''; document.getElementById('deleteModal').classList.remove('hidden'); }
+        function closeDeleteModal() { document.getElementById('deleteModal').classList.add('hidden'); currentTeacherForDelete=null; }
+
+        async function confirmDelete() {
+            if(!currentTeacherForDelete) return;
+            try {
+                const res = await fetch(`/api/teachers/${currentTeacherForDelete}`, { method:'DELETE', headers:{'Authorization':`Bearer ${localStorage.getItem('adminToken')}`} });
+                const data = await res.json();
+                if(data.success) { showToast('ডিলিট হয়েছে','success'); closeDeleteModal(); loadTeachers(); }
+                else showToast(data.message||'ব্যর্থ','error');
+            } catch(e) { showToast('সার্ভার এরর','error'); }
+        }
+
+        function openAddTeacherModal() { document.getElementById('addName').value=''; document.getElementById('addPhone').value=''; document.getElementById('addEmail').value=''; document.getElementById('addPassword').value=''; document.getElementById('addTeacherModal').classList.remove('hidden'); }
+        function closeAddTeacherModal() { document.getElementById('addTeacherModal').classList.add('hidden'); }
+
+        async function saveNewTeacher() {
+            const name = document.getElementById('addName').value.trim(), phone = document.getElementById('addPhone').value.trim(), email = document.getElementById('addEmail').value.trim(), password = document.getElementById('addPassword').value;
+            if(!name||!phone||!password) { showToast('নাম, ফোন ও পাসওয়ার্ড দিতে হবে','warning'); return; }
+            if(password.length<6) { showToast('পাসওয়ার্ড ন্যূনতম ৬ অক্ষর','warning'); return; }
+            try {
+                const res = await fetch('/api/teachers', { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('adminToken')}`}, body:JSON.stringify({name,phone,email,password}) });
+                const data = await res.json();
+                if(data.success) { showToast('যোগ হয়েছে!','success'); closeAddTeacherModal(); loadTeachers(); }
+                else showToast(data.message||'ব্যর্থ','error');
+            } catch(e) { showToast('সার্ভার এরর','error'); }
+        }
+
+        function togglePassword(id, btn) {
+            const input = document.getElementById(id), icon = btn.querySelector('i');
+            if(input.type==='password') { input.type='text'; icon.classList.replace('fa-eye','fa-eye-slash'); }
+            else { input.type='password'; icon.classList.replace('fa-eye-slash','fa-eye'); }
+        }
+
+        function showToast(msg, type='info') {
+            const c = document.getElementById('toastContainer');
+            const colors = { success:'bg-green-500', error:'bg-red-500', warning:'bg-amber-500', info:'bg-primary-500' };
+            const icons = { success:'fa-check-circle', error:'fa-times-circle', warning:'fa-exclamation-circle', info:'fa-info-circle' };
+            const t = document.createElement('div');
+            t.className = `toast-enter flex items-center gap-2 px-4 py-2.5 rounded-lg text-white shadow-lg ${colors[type]} text-xs font-medium min-w-[260px]`;
+            t.innerHTML = `<i class="fas ${icons[type]}"></i><span class="font-bengali">${msg}</span><button onclick="this.parentElement.remove()" class="ml-auto opacity-70 hover:opacity-100"><i class="fas fa-times"></i></button>`;
+            c.appendChild(t); setTimeout(()=>t.remove(),3500);
+        }
+
+        function exportData() {
+            const csv = [['Name','Phone','Email','Status','Assigned Classes'],...allTeachers.map(t=>[t.name,t.phone,t.email||'',t.isActive?'Active':'Inactive',(t.assignedClasses||[]).map(c=>`${c.courseName} (${c.batchNo})`).join('; ')])].map(r=>r.map(c=>`"${c}"`).join(',')).join('');
+            const blob = new Blob([csv],{type:'text/csv'}), url = URL.createObjectURL(blob), a = document.createElement('a');
+            a.href=url; a.download=`teachers_${new Date().toISOString().split('T')[0]}.csv`; a.click(); URL.revokeObjectURL(url);
+            showToast('CSV এক্সপোর্ট হয়েছে','success');
+        }
+
+        document.addEventListener('keydown', e => { if(e.key==='Escape') { closeModal(); closeEditModal(); closeDeleteModal(); closeAddTeacherModal(); } });
+    </script>
+</body>
+</html>

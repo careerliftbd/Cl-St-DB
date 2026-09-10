@@ -1,4 +1,5 @@
 require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -7,7 +8,9 @@ const connectDB = require('./config/db');
 // ১. রাউট ফাইলসমূহ ইমপোর্ট করা
 const authRoutes = require('./routes/authRoutes');
 const studentRoutes = require('./routes/studentRoutes');
-const driveRoutes = require('./routes/driveRoutes'); 
+const driveRoutes = require('./routes/driveRoutes');
+const teacherRoutes = require('./routes/teacherRoutes');
+const attendanceRoutes = require('./routes/attendanceRoutes');
 
 const app = express();
 
@@ -16,18 +19,20 @@ connectDB();
 
 // ৩. গ্লোবাল মিডলওয়্যার সেটআপ
 app.use(cors());
-app.use(express.json()); 
-app.use(express.urlencoded({ extended: true })); 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // ৪. API রাউটসমূহ যুক্ত করা (স্ট্যাটিক ফাইলের আগে)
 app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
-app.use('/api/drive', driveRoutes); 
+app.use('/api/drive', driveRoutes);
+app.use('/api/teachers', teacherRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 // ৫. ফ্রন্টএন্ডের জন্য স্ট্যাটিক ফোল্ডার সার্ভ করা
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ক্লিন URL রাউটসমূহ — .html ছাড়া পেজ লোড করার জন্য
+// ── ADMIN PAGES (Clean URLs) ──
 app.get('/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
@@ -60,12 +65,35 @@ app.get('/edit-student', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'edit-student.html'));
 });
 
+app.get('/add-teacher', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'add-teacher.html'));
+});
+
+// 🆕 NEW: Teacher Management page
+app.get('/teacher-management', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'teacher-management.html'));
+});
+
+app.get('/view-attendance', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'view-attendance.html'));
+});
+
+// ✅ NEW: TEACHER PAGES (Clean URLs)
+app.get('/teacher/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'teacher', 'dashboard.html'));
+});
+
+app.get('/teacher/take-attendance', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'teacher', 'take-attendance.html'));
+});
+
 // .html রিডাইরেক্ট মিডলওয়্যার: কেউ .html লিখলে ক্লিন ইউআরএল-এ রিডাইরেক্ট
 app.use((req, res, next) => {
     if (req.path.endsWith('.html')) {
         const newPath = req.path.slice(0, -5);
-        // query string preserve করুন
-        const query = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+        const query = req.url.includes('?')
+            ? req.url.slice(req.url.indexOf('?'))
+            : '';
         return res.redirect(301, newPath + query);
     }
     next();
@@ -73,47 +101,75 @@ app.use((req, res, next) => {
 
 // বেসিক হেলথ-চেক রাউট
 app.get('/api/status', (req, res) => {
-    res.json({ status: "success", message: "Careerlift API is running smoothly!" });
+    res.json({
+        status: "success",
+        message: "Careerlift API is running smoothly!"
+    });
 });
 
-// ৬. SPA Fallback: অন্য যেকোনো রিকোয়েস্টে index.html সার্ভ করা
-// API রাউট এবং স্পেসিফিক পেজ রাউট ছাড়া
+// ৬. SPA Fallback — ONLY for non-API, non-file routes
 app.use((req, res) => {
-    // যদি API রাউট না হয়
-    if (!req.path.startsWith('/api/')) {
-        res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    // Don't serve index.html for API routes
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({
+            success: false,
+            message: 'API Route Not Found'
+        });
     }
+
+    // Don't serve index.html for existing static files
+    const ext = path.extname(req.path);
+    if (ext && ext !== '.html') {
+        return res.status(404).json({
+            success: false,
+            message: 'File Not Found'
+        });
+    }
+
+    // SPA fallback for frontend routes
+    return res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // ── GLOBAL ERROR HANDLER ──
 app.use((err, req, res, next) => {
     console.error('🔥 [Global Error Handler]', err.message);
     if (err.stack) {
-        console.error('   Stack:', err.stack.split('\n').slice(0, 3).join('\n'));
+        console.error(
+            '   Stack:',
+            err.stack.split('\n').slice(0, 3).join('\n')
+        );
     }
-
     if (res.headersSent) {
         return next(err);
     }
-
     res.status(err.status || 500).json({
         success: false,
         message: err.message || 'Internal Server Error',
-        error: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        error:
+            process.env.NODE_ENV === 'development'
+                ? err.stack
+                : undefined
     });
 });
 
 // ৭. সার্ভার লিসেনিং
 const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
-    console.log(`[+] Server is running in DEV mode on http://localhost:${PORT}`);
 
+const server = app.listen(PORT, () => {
+    console.log(
+        `[+] Server is running in DEV mode on http://localhost:${PORT}`
+    );
     try {
         const { initAutoBackup } = require('./utils/autoBackup');
         initAutoBackup();
     } catch (err) {
-        console.warn('⚠️ [App] Auto-backup initialization failed:', err.message);
-        console.warn('   Server will continue running without auto-backup.');
+        console.warn(
+            '⚠️ [App] Auto-backup initialization failed:',
+            err.message
+        );
+        console.warn(
+            '   Server will continue running without auto-backup.'
+        );
     }
 });
 
@@ -125,5 +181,10 @@ process.on('uncaughtException', (err) => {
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-    console.error('💥 [Unhandled Rejection] at:', promise, 'reason:', reason);
+    console.error(
+        '💥 [Unhandled Rejection] at:',
+        promise,
+        'reason:',
+        reason
+    );
 });

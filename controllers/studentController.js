@@ -1,6 +1,5 @@
 const Student = require('../models/Student');
-// Export মডিউলগুলো টপে কল করা ভালো প্র্যাকটিস
-const { generateStudentExcel } = require('../utils/excelExport'); 
+const { generateStudentExcel } = require('../utils/excelExport');
 
 // @desc    নতুন স্টুডেন্ট যুক্ত করা (Add Student)
 // @route   POST /api/students
@@ -148,7 +147,7 @@ exports.updateDocuments = async (req, res) => {
 // @route   GET /api/students
 exports.getStudents = async (req, res) => {
     try {
-        const { search, status, goal, courseName, batch } = req.query;  // FIX 3: batch parameter added
+        const { search, status, goal, courseName, batch } = req.query;
         let query = {};
 
         if (status) {
@@ -163,7 +162,6 @@ exports.getStudents = async (req, res) => {
             query['enrollments.courseName'] = { $regex: courseName, $options: 'i' };
         }
 
-        // FIX 3: Batch filter logic
         if (batch) {
             query['enrollments.batchNo'] = batch;
         }
@@ -188,11 +186,30 @@ exports.getStudents = async (req, res) => {
     }
 };
 
-// @desc    নির্দিষ্ট শিক্ষার্থীর প্রোফাইল
+// @desc    নির্দিষ্ট শিক্ষার্থীর প্রোফাইল (by studentID like CL-26-001)
 // @route   GET /api/students/:studentID
 exports.getStudentById = async (req, res) => {
     try {
         const student = await Student.findOne({ studentID: req.params.studentID });
+
+        if (!student) {
+            return res.status(404).json({ success: false, message: 'শিক্ষার্থী খুঁজে পাওয়া যায়নি!' });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: student
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'সার্ভার এরর: ' + error.message });
+    }
+};
+
+// 🆕 NEW: Get student by MongoDB _id (for attendance/profile navigation)
+// @route   GET /api/students/profile/:id
+exports.getStudentByMongoId = async (req, res) => {
+    try {
+        const student = await Student.findById(req.params.id);
 
         if (!student) {
             return res.status(404).json({ success: false, message: 'শিক্ষার্থী খুঁজে পাওয়া যায়নি!' });
@@ -290,13 +307,12 @@ exports.updateEnrollmentStatus = async (req, res) => {
 // @route   GET /api/students/export
 exports.exportStudentsExcel = async (req, res) => {
     try {
-        const { search, status, goal, courseName, batch } = req.query;  // FIX 3: batch parameter added
+        const { search, status, goal, courseName, batch } = req.query;
 
         let query = {};
         if (status) query['enrollments.status'] = status === 'Alumni' ? 'Completed' : status;
         if (goal) query['careerProfile.careerGoal'] = goal;
         if (courseName) query['enrollments.courseName'] = courseName;
-        // FIX 3: Batch filter for export
         if (batch) query['enrollments.batchNo'] = batch;
         if (search) {
             query['$or'] = [

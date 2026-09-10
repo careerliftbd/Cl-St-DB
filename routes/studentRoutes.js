@@ -6,6 +6,7 @@ const {
     addStudent,
     getStudents,
     getStudentById,
+    getStudentByMongoId,  // 🆕 NEW: Get by MongoDB _id
     updateStudent,
     deleteStudent,
     updateEnrollmentStatus,
@@ -24,11 +25,15 @@ router.get('/public-alumni', getPublicAlumni);
 // Protected routes — auth required from here
 router.use(protect);
 
+// 🆕 IMPORTANT: Specific/static routes MUST come BEFORE dynamic /:id routes
+router.get('/export', exportStudentsExcel);
+
 router.route('/')
     .post(addStudent)
     .get(getStudents);
 
-router.get('/export', exportStudentsExcel);
+// 🆕 NEW: Get student by MongoDB _id (for attendance/profile navigation)
+router.get('/profile/:id', getStudentByMongoId);
 
 // ── NEW: Enroll in new course (uses $push) ──
 router.post('/:id/enroll', enrollInNewCourse);
@@ -41,6 +46,7 @@ router.patch('/:id/enrollments/:enrollmentId/status', updateEnrollmentStatus);
 
 router.put('/:id', updateStudent);
 
+// Dynamic routes LAST (these catch anything)
 router.route('/:studentID')
     .get(getStudentById)
     .delete(deleteStudent);

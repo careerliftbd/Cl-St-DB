@@ -293,6 +293,7 @@
   </style>
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
 
@@ -451,10 +452,11 @@
     });
 
     const urlParams = new URLSearchParams(window.location.search);
+    const mongoId = urlParams.get('mongoId');
     const studentID = urlParams.get('id');
     let studentMongoId = '';
 
-    if (!studentID) {
+    if (!mongoId && !studentID) {
         document.getElementById('profileContent').innerHTML = `
             <div class="profile-error" style="text-align:center; padding:50px;">
                 <h2 style="color:#EF4444; margin-bottom:10px;">⚠️ No Student ID Provided</h2>
@@ -551,13 +553,22 @@
     });
 
     function goToEditPage() {
-      window.location.href = `/edit-student.html?id=${studentID}`;
+      if (mongoId) {
+        window.location.href = `/edit-student.html?mongoId=${mongoId}`;
+      } else {
+        window.location.href = `/edit-student.html?id=${studentID}`;
+      }
     }
 
     /* ── LOAD DATA ── */
     async function loadStudentProfile() {
       try {
-        const res = await fetch(`/api/students/${studentID}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        let res;
+        if (mongoId) {
+          res = await fetch(`/api/students/profile/${mongoId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        } else {
+          res = await fetch(`/api/students/${studentID}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        }
         const result = await res.json();
 
         if (result.success) {
